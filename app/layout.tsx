@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
-import type { Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Smartphone } from "lucide-react";
-import "./globals.css";
+import "../src/app/globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,21 +14,29 @@ const geistMono = Geist_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#0F2540",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0F2540" },
+    { media: "(prefers-color-scheme: dark)", color: "#0F2540" },
+  ],
   viewportFit: "cover",
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
 };
 
 export const metadata: Metadata = {
-  title: "Ekmek",
+  title: "Ekmek - İşe giden yolun en kısası",
   description:
     "Ekmek, iş arayanlarla işverenleri saniyeler içinde buluşturur.",
   icons: {
     icon: [
       { url: "/favicon/favicon.ico" },
-      { url: "/favicon/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon/favicon.svg", type: "image/svg+xml" },
+      {
+        url: "/favicon/favicon-96x96.png",
+        sizes: "96x96",
+        type: "image/png",
+      },
     ],
     apple: [
       {
@@ -60,7 +67,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-screen bg-white flex flex-col">
+      <body className="min-h-screen flex flex-col">
         <div
           role="alertdialog"
           aria-modal="true"
