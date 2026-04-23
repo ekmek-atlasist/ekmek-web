@@ -23,7 +23,7 @@ export default function Header() {
     >
       <div className="flex items-center gap-2">
         <Image
-          src="/ekmek_icon.png"
+          src="/ekmek_icon.svg"
           alt="ekmek"
           width={56}
           height={56}

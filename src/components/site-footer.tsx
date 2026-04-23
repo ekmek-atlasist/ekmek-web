@@ -1,8 +1,8 @@
 import Image from "next/image";
 import { Instagram, Linkedin, Twitter } from "lucide-react";
 
-const linkClass =
-  "block text-sm text-white/60 transition-colors hover:text-white";
+const legalLinkClass =
+  "block text-sm text-white/70 transition-colors hover:text-white";
 
 type SiteFooterProps = {
   compact?: boolean;
@@ -10,22 +10,18 @@ type SiteFooterProps = {
 };
 
 export function SiteFooter({ compact, className }: SiteFooterProps) {
-  const innerPad = compact ? "py-6 px-6 md:px-8" : "py-[60px] px-10";
-  const gridGap = compact ? "gap-6 lg:gap-8" : "gap-10 lg:gap-12";
-  const headingMb = compact ? "mb-2" : "mb-4";
-  const navGap = compact ? "gap-2" : "gap-3";
-  const bottomWrap = compact
-    ? "mt-6 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between"
-    : "mt-12 flex flex-col gap-6 border-t border-white/10 pt-10 sm:flex-row sm:items-center sm:justify-between";
+  const outerPad = compact
+    ? "px-6 py-10 md:px-10 md:py-12"
+    : "px-6 py-16 md:px-12";
 
   return (
     <footer className={`bg-[#1A1A1A] text-white ${className ?? ""}`}>
-      <div className={`mx-auto max-w-7xl ${innerPad}`}>
-        <div className={`grid grid-cols-1 lg:grid-cols-4 ${gridGap}`}>
-          <div className="flex flex-col gap-3">
+      <div className={`mx-auto max-w-7xl ${outerPad}`}>
+        <div className="flex flex-col gap-12 md:flex-row md:items-start md:justify-between md:gap-16 lg:gap-20">
+          <div className="flex min-w-0 flex-col items-start gap-3">
             <div className="flex items-center gap-3">
               <Image
-                src="/ekmek_icon.png"
+                src="/ekmek_icon.svg"
                 alt=""
                 width={compact ? 40 : 48}
                 height={compact ? 40 : 48}
@@ -41,89 +37,64 @@ export function SiteFooter({ compact, className }: SiteFooterProps) {
                 ekmek
               </span>
             </div>
-            <p className="text-sm leading-relaxed text-white/60">
-            İşe giden yolun en kısası. <br/> Ekmek, iş arayanlarla işverenleri <br/> saniyeler içinde buluşturur.
+            <p className="max-w-sm text-sm leading-relaxed text-white/60">
+              İşe giden yolun en kısası. <br /> Ekmek, iş arayanlarla işverenleri{" "}
+              <br />
+              saniyeler içinde buluşturur.
             </p>
           </div>
 
-          <div>
-            <h3 className={`text-sm font-semibold text-white ${headingMb}`}>
-              Ürün
+          <div className="flex shrink-0 flex-col items-start md:items-end">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-white/40">
+              YASAL
             </h3>
-            <nav className={`flex flex-col ${navGap}`} aria-label="Ürün">
-              <a href="#" className={linkClass}>
-                Özellikler
-              </a>
-              <a href="#" className={linkClass}>
-                Nasıl Çalışır
-              </a>
-              <a href="#" className={linkClass}>
-                Sık Sorulan Sorular
-              </a>
-            </nav>
-          </div>
-
-          <div>
-            <h3 className={`text-sm font-semibold text-white ${headingMb}`}>
-              Şirket
-            </h3>
-            <nav className={`flex flex-col ${navGap}`} aria-label="Şirket">
-              <a href="#" className={linkClass}>
-                Hakkımızda
-              </a>
-              <a href="#" className={linkClass}>
-                İletişim
-              </a>
-              <a href="#" className={linkClass}>
-                Kariyer
-              </a>
-            </nav>
-          </div>
-
-          <div>
-            <h3 className={`text-sm font-semibold text-white ${headingMb}`}>
-              Yasal
-            </h3>
-            <nav className={`flex flex-col ${navGap}`} aria-label="Yasal">
-              <a href="#" className={linkClass}>
+            <nav
+              className="mt-3 flex w-full flex-col space-y-3 md:items-end"
+              aria-label="Yasal"
+            >
+              <a href="#" className={`${legalLinkClass} text-left md:text-right`}>
                 Gizlilik Politikası
               </a>
-              <a href="#" className={linkClass}>
+              <a href="#" className={`${legalLinkClass} text-left md:text-right`}>
                 Kullanım Koşulları
               </a>
-              <a href="#" className={linkClass}>
+              <a href="#" className={`${legalLinkClass} text-left md:text-right`}>
                 KVKK Aydınlatma Metni
               </a>
             </nav>
           </div>
         </div>
 
-        <div className={bottomWrap}>
-          <p className="text-sm text-white/50">
-            © 2026 Ekmek. Tüm hakları saklıdır.
-          </p>
-          <div className="flex items-center gap-5">
-            <a
-              href="#"
-              className="text-white/60 transition-colors hover:text-white"
-              aria-label="Instagram"
-            >
-              <Instagram className="size-5" strokeWidth={1.75} />
-            </a>
-            <a
-              href="#"
-              className="text-white/60 transition-colors hover:text-white"
-              aria-label="Twitter"
-            >
-              <Twitter className="size-5" strokeWidth={1.75} />
-            </a>
-            <a
-              href="#"
-              className="text-white/60 transition-colors hover:text-white"
-              aria-label="LinkedIn"
-            >
-              <Linkedin className="size-5" strokeWidth={1.75} />
-            </a>
+        <div className="mt-12 border-t border-white/10 pt-6 md:mt-14">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <p className="text-sm text-white/40">
+              © 2026 Ekmek. Tüm hakları saklıdır.
+            </p>
+            <div className="flex items-center gap-4">
+              <a
+                href="https://www.instagram.com/ekmek.is/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/40 transition-colors hover:text-white"
+                aria-label="Instagram — ekmek.is"
+              >
+                <Instagram className="size-5" strokeWidth={1.75} />
+              </a>
+              <a
+                href="#"
+                className="text-white/40 transition-colors hover:text-white"
+                aria-label="Twitter"
+              >
+                <Twitter className="size-5" strokeWidth={1.75} />
+              </a>
+              <a
+                href="#"
+                className="text-white/40 transition-colors hover:text-white"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="size-5" strokeWidth={1.75} />
+              </a>
+            </div>
           </div>
         </div>
       </div>

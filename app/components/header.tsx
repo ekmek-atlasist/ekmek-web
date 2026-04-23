@@ -10,7 +10,7 @@ export function Header() {
           className="flex items-center gap-3 rounded-md outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
         >
           <Image
-            src="/ekmek_icon.png"
+            src="/ekmek_icon.svg"
             alt=""
             width={40}
             height={40}
