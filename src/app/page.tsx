@@ -45,8 +45,9 @@ export default function Home() {
             İşe giden yolun en kısası.
           </h1>
           <p className="mt-5 max-w-[500px] text-lg leading-relaxed text-white/80 md:mt-6">
-            Ekmek, iş arayanları ve işverenleri saniyeler içinde buluşturur.
-            Hemen indir, profilini oluştur, eşleş.
+            Ekmek, iş arayanlarla işverenleri
+            <br />
+            saniyeler içinde buluşturur.
           </p>
         </div>
       </section>
