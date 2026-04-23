@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Header from "../components/header";
 import { NotifyForm } from "../components/notify-form";
 import { SiteFooter } from "../components/site-footer";
@@ -27,6 +28,17 @@ export default function Home() {
           className="absolute inset-0 z-[1] bg-black/50"
           aria-hidden
         />
+
+        <div className="pointer-events-none absolute bottom-[1.5%] right-1.5 z-[2] md:bottom-[3%] md:right-4">
+          <Image
+            src="/ekmek_icon.svg"
+            alt="Ekmek"
+            width={80}
+            height={80}
+            className="size-16 rounded-xl drop-shadow-[0_4px_24px_rgba(0,0,0,0.35)] md:size-20"
+            priority
+          />
+        </div>
 
         <div className="relative z-10 flex h-full w-full flex-col justify-end items-start pl-[8%] pr-6 pb-[8%] pt-[calc(72px+2rem)] text-left md:pl-[10%] md:pb-[10%] md:pr-10">
           <h1 className="max-w-[min(100%,42rem)] text-5xl font-black leading-[0.95] tracking-tight text-white drop-shadow-sm sm:text-6xl md:text-7xl">
