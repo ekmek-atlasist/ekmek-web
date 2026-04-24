@@ -44,10 +44,8 @@ export default function Home() {
           <h1 className="max-w-[min(100%,42rem)] text-5xl font-black leading-[0.95] tracking-tight text-white drop-shadow-sm sm:text-6xl md:text-7xl">
             İşe giden yolun en kısası.
           </h1>
-          <p className="mt-5 max-w-[500px] text-lg leading-relaxed text-white/80 md:mt-6">
-            Ekmek, iş arayanlarla işverenleri
-            <br />
-            saniyeler içinde buluşturur.
+          <p className="mt-5 max-w-[500px] text-3xl leading-relaxed text-white/80 md:mt-6">
+            Yakında Sizlerle...
           </p>
         </div>
       </section>
