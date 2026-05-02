@@ -40,9 +40,7 @@ export function SiteFooter({ compact, className }: SiteFooterProps) {
             <p className="max-w-sm text-sm leading-relaxed text-white/60">
               İşe giden yolun en kısası.
               <br />
-              Ekmek, iş arayanlarla işverenleri
-              <br />
-              saniyeler içinde buluşturur.
+              Yakında Sizlerle...
             </p>
           </div>
 
