@@ -30,7 +30,10 @@ export default function Header() {
           className="size-14 rounded-xl"
           priority
         />
-        <span className="text-xl font-bold text-white">ekmek</span>
+        <span className="text-xl font-bold">
+          <span className="text-white">ekmekisbul</span>
+          <span className="text-[#036AAF]">.com</span>
+        </span>
       </div>
 
       <a
