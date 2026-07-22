@@ -1,20 +1,18 @@
 import Image from "next/image";
-import Header from "../components/header";
+import { FinishSignOutOnMount } from "../components/finish-sign-out-on-mount";
 import { NotifyForm } from "../components/notify-form";
-import { SiteFooter } from "../components/site-footer";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white">
-      <Header />
-
+    <main className="min-h-screen w-full overflow-x-hidden bg-white">
+      <FinishSignOutOnMount />
       <section
         id="hero"
-        className="relative h-[100dvh] overflow-hidden"
+        className="relative h-[100svh] min-h-[100dvh] w-full overflow-hidden"
         aria-label="Tanıtım"
       >
         <video
-          className="absolute inset-0 z-0 h-full w-full object-cover"
+          className="absolute inset-0 z-0 size-full object-cover object-center"
           autoPlay
           muted
           loop
@@ -24,12 +22,9 @@ export default function Home() {
         >
           <source src="/hero-bg.mp4" type="video/mp4" />
         </video>
-        <div
-          className="absolute inset-0 z-[1] bg-black/50"
-          aria-hidden
-        />
+        <div className="absolute inset-0 z-[1] bg-black/50" aria-hidden />
 
-        <div className="pointer-events-none absolute bottom-[1.5%] right-1.5 z-[2] md:bottom-[3%] md:right-4">
+        <div className="pointer-events-none absolute right-1.5 bottom-[1.5%] z-[2] md:right-4 md:bottom-[3%]">
           <Image
             src="/ekmek_icon.svg"
             alt="Ekmek"
@@ -40,8 +35,8 @@ export default function Home() {
           />
         </div>
 
-        <div className="relative z-10 flex h-full w-full flex-col justify-end items-start pl-[8%] pr-6 pb-[8%] pt-[calc(72px+2rem)] text-left md:pl-[10%] md:pb-[10%] md:pr-10">
-          <h1 className="max-w-[min(100%,42rem)] text-5xl font-black leading-[0.95] tracking-tight text-white drop-shadow-sm sm:text-6xl md:text-7xl">
+        <div className="relative z-10 flex h-full w-full flex-col items-start justify-end pt-[calc(72px+2rem)] pr-6 pb-[8%] pl-[8%] text-left md:pr-10 md:pb-[10%] md:pl-[10%]">
+          <h1 className="max-w-[min(100%,42rem)] text-5xl leading-[0.95] font-black tracking-tight text-white drop-shadow-sm sm:text-6xl md:text-7xl">
             İşe giden yolun en kısası.
           </h1>
           <p className="mt-5 max-w-[500px] text-3xl leading-relaxed text-white/80 md:mt-6">
@@ -50,19 +45,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Tek ekranda: form + footer; büyük ekranda yükseklik viewport - header */}
-      <div
-        id="notify"
-        className="scroll-mt-[72px] flex min-h-[calc(100dvh-72px)] flex-col lg:h-[calc(100dvh-72px)] lg:max-h-[calc(100dvh-72px)] lg:overflow-hidden"
-      >
+      <div id="notify" className="scroll-mt-[72px]">
         <section
-          className="flex min-h-0 flex-1 flex-col justify-center bg-[#0f2540] px-6 py-8 md:px-10 md:py-10"
+          className="bg-[#0f2540] px-6 py-16 md:px-10 md:py-20"
           aria-labelledby="notify-baslik"
         >
           <div className="mx-auto flex w-full max-w-3xl flex-col items-center text-center">
             <h2
               id="notify-baslik"
-              className="text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl"
+              className="text-3xl leading-tight font-black tracking-tight text-white sm:text-4xl lg:text-5xl"
             >
               Yayınlandığında ilk sen haberdar ol
             </h2>
@@ -73,8 +64,6 @@ export default function Home() {
             <NotifyForm />
           </div>
         </section>
-
-        <SiteFooter compact className="shrink-0" />
       </div>
     </main>
   );

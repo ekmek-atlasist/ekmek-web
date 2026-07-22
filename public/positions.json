@@ -1,0 +1,524 @@
+{
+  "categories": [
+    {
+      "name": "Mühendislik",
+      "id": "muhendislik",
+      "positions": [
+        "Çevre Mühendisi",
+        "Elektrik, Elektronik Mühendisi",
+        "Endüstri Mühendisi",
+        "Enerji Sistemleri Mühendisi",
+        "Fizik Mühendisi",
+        "Gemi Mühendisi",
+        "Genetik Mühendisi",
+        "Gıda Mühendisi",
+        "Harita Mühendisi",
+        "İnşaat Mühendisi",
+        "Jeofizik Mühendisi",
+        "Jeoloji Mühendisi",
+        "Kimya Mühendisi",
+        "Maden Mühendisi",
+        "Makine Mühendisi",
+        "Mekatronik Mühendisi",
+        "Metalurji ve Malzeme Mühendisi",
+        "Orman Mühendisi",
+        "Otomotiv Mühendisi",
+        "Su Ürünleri Mühendisi",
+        "Tekstil Mühendisi",
+        "Uzay Mühendisi",
+        "Ziraat Mühendisi"
+      ]
+    },
+    {
+      "name": "Avukatlık & Hukuki Danışmanlık",
+      "id": "avukatlik",
+      "positions": [
+        "Avukat",
+        "Avukat Katibi",
+        "Hukuk Müdürü",
+        "Hukuk Müşaviri",
+        "Stajyer Avukat",
+        "Şirket Avukatı"
+      ]
+    },
+    {
+      "name": "Eğitim",
+      "id": "egitim",
+      "positions": [
+        "Çocuk Eğitimi",
+        "Fitness Eğitmeni",
+        "Kurumsal Eğitim ve Danışmanlık",
+        "Öğretmen",
+        "Yazılım ve Diğer Teknik Eğitim"
+      ]
+    },
+    {
+      "name": "Eğlence & Aktivite",
+      "id": "eglence",
+      "positions": [
+        "Animatör ve Palyaço",
+        "Fotoğrafçı",
+        "Kameraman",
+        "Müzisyen ve DJ",
+        "Oyuncu ve Model",
+        "Ses ve Işık Teknisyeni",
+        "Spor Faaliyetleri"
+      ]
+    },
+    {
+      "name": "Güzellik & Bakım",
+      "id": "guzellik",
+      "positions": [
+        "Kadın Kuaförü",
+        "Erkek Kuaförü",
+        "Güzellik Uzmanı",
+        "Makyöz",
+        "Kalıcı Makyaj Uzmanı",
+        "Kaş & Kirpik Uzmanı",
+        "Manikür & Pedikür Uzmanı",
+        "Masör & Masöz",
+        "Kedi & Köpek Kuaförü",
+        "Cilt Bakım Elemanı",
+        "Ağdacı / Epilasyon Uzmanı",
+        "Dövmeci"
+      ]
+    },
+    {
+      "name": "IT ve Yazılım Geliştirme",
+      "id": "itveyazilim",
+      "positions": [
+        "Bilgisayar Teknisyeni",
+        "UI/UX Tasarımı",
+        "Proje Yöneticisi",
+        "Sistem Analisti",
+        "Sistem Güvenliği Uzmanı",
+        "Sistem Yöneticisi",
+        "Veritabanı Yöneticisi",
+        "Yazılım Geliştirme Uzmanı",
+        "Yazılım Mühendisi",
+        "Bilgisayar Mühendisi",
+        "Yazılım Mimarı"
+      ]
+    },
+    {
+      "name": "İnsan Kaynakları",
+      "id": "insankaynaklari",
+      "positions": [
+        "Halka İlişkiler Uzmanı",
+        "İdari İşler Sorumlusu",
+        "İnsan Kaynakları Uzmanı",
+        "Kurumsal Gelişim & Eğitim"
+      ]
+    },
+    {
+      "name": "İnşaat & Yapı",
+      "id": "insaat",
+      "positions": [
+        "Asansör & Taşıma Sistemleri",
+        "Beton ve Taş İşleri",
+        "Çatı İşleri",
+        "Demir İşleri",
+        "Duvar, Kaplama & Boya İşleri",
+        "Elektrik İşleri",
+        "Genel İşçilik",
+        "Hafriyat",
+        "Isıtma, Havalandırma & İklimlendirme",
+        "İş ve İnşaat Makinaları Kullanımı",
+        "Kapı, Pencere & Panjur İşleri",
+        "Otomasyon",
+        "Proje Taahhüt",
+        "Şantiye Yönetimi",
+        "Tekniker",
+        "Sıvacı",
+        "Boyacı",
+        "Fayans Ustası",
+        "Duvarcı",
+        "Demir Doğramacı",
+        "Su Yalıtımcısı",
+        "Isı Yalıtımcısı",
+        "Ses Yalıtımcısı",
+        "Asfalt İşçisi",
+        "Greyder Operatörü",
+        "Dozer Operatörü",
+        "Ekskavatör Operatörü",
+        "Forklift Operatörü",
+        "Vinç Operatörü",
+        "Bina Yıkım İşçisi",
+        "Beden İşçisi",
+        "Çelik Kapı Montaj İşçisi",
+        "Perdeci",
+        "Camcı"
+      ]
+    },
+    {
+      "name": "İşletme & Stratejik Yönetim",
+      "id": "isletme",
+      "positions": [
+        "Danışmanlık",
+        "Eğitim Kurumu Yönetimi",
+        "Franchise",
+        "Hastane / Klinik Yöneticiliği",
+        "İş Analizi",
+        "Şube Yönetimi"
+      ]
+    },
+    {
+      "name": "Koruma & Güvenlik",
+      "id": "koruma",
+      "positions": [
+        "Cankurtaran",
+        "Güvenlik Görevlisi",
+        "Güvenlik Şefi",
+        "Yakın Koruma"
+      ]
+    },
+    {
+      "name": "Müşteri Hizmetleri",
+      "id": "musterihizmetleri",
+      "positions": [
+        "Çağrı Merkezi Elemanı",
+        "Host / Hostes",
+        "Müşteri Temsilcisi",
+        "Rezervasyon & Biletleme",
+        "Teknik Müşteri Destek",
+        "Tele Sekreter",
+        "Anons Görevlisi"
+      ]
+    },
+    {
+      "name": "Ofis Yönetimi & İdari İşler",
+      "id": "ofisyonetimi",
+      "positions": [
+        "Apartman & Site Görevlisi",
+        "Bina Yönetimi",
+        "İdari İşler Sorumlusu",
+        "İkram & Kat Görevlisi",
+        "İş Birimi Yöneticiliği",
+        "Ofis Yönetimi",
+        "Resepsiyon",
+        "Sekreter",
+        "Temizlik Görevlisi",
+        "Yönetici Asistanı",
+        "Cam Temizleyici",
+        "Halı Temizleme Elemanı",
+        "Çöp Toplama Personeli",
+        "Park Temizlik İşçisi",
+        "Oto Yıkama Elemanı",
+        "Çamaşırhane Görevlisi"
+      ]
+    },
+    {
+      "name": "Pazarlama & Ürün Yönetimi",
+      "id": "pazarlama",
+      "positions": [
+        "CRM",
+        "Etkinlik Yönetimi",
+        "Kurumsal İletişim",
+        "Marka Yönetimi",
+        "Medya Planlama",
+        "Pazar Araştırma",
+        "Pazarlama İletişimi",
+        "Ürün Yönetimi"
+      ]
+    },
+    {
+      "name": "Radyo, Sinema & Televizyon",
+      "id": "radyosinema",
+      "positions": [
+        "Radyo Sunucusu",
+        "Seslendirme Sanatçısı",
+        "TV Sunucusu",
+        "Genel Yayın Yönetmeni",
+        "Kurgu Operatörü"
+      ]
+    },
+    {
+      "name": "Restoran & Konaklama",
+      "id": "restorankonaklama",
+      "positions": [
+        "Aşçı",
+        "Aşçı Yardımcısı",
+        "Barmen & Barista",
+        "Bellboy",
+        "Bulaşıkçı",
+        "Çamaşırhane Görevlisi",
+        "Hamurkar & Ekmek Ustası",
+        "Host & Hostes",
+        "Housekeeping",
+        "Kasiyer",
+        "Kat Görevlisi & Mutfak Personeli",
+        "Kebap & Döner Ustası",
+        "Meze Ustası",
+        "Moto Kurye",
+        "Mutfak Yöneticisi",
+        "Müşteri İlişkileri",
+        "Otel Yöneticisi",
+        "Pasta & Tatlı Ustası",
+        "Pide & Fırın Ustası",
+        "Pizza Ustası",
+        "Resepsiyon & Frontdesk",
+        "Restoran Yöneticisi",
+        "Salata Ustası",
+        "Servis Elemanı",
+        "Sommelier",
+        "Tezgahtar",
+        "Vale",
+        "Garson",
+        "Çaycı / Çay Servis Elemanı",
+        "Catering Çalışanı",
+        "Fast-food Çalışanı",
+        "Dondurmacı",
+        "Cağ Kebap Ustası",
+        "Fırıncı",
+        "Servis Komisi",
+        "Büfe Çalışanı"
+      ]
+    },
+    {
+      "name": "Sağlık",
+      "id": "saglik",
+      "positions": [
+        "Acil Tıp Teknisyeni",
+        "Anestezi Teknikeri",
+        "Asistan",
+        "Dil ve Konuşma Terapisti",
+        "Diş Hekimi",
+        "Diyetisyen",
+        "EEG & EMG Teknikeri",
+        "Ergoterapi",
+        "Fizik Tedavi Teknikeri",
+        "Fizyoterapist",
+        "Göz Doktoru",
+        "Hemşire",
+        "İş Güvenliği Uzmanı",
+        "İşyeri Hekimi",
+        "Laborant",
+        "Optisyen",
+        "Paramedik",
+        "Pratisyen Hekim",
+        "Psikolog",
+        "Radyoloji Uzmanı",
+        "Spor Hastalıkları Uzmanı",
+        "Tıbbi Görüntüleme Teknikeri",
+        "Tıbbi Sekreter",
+        "Uzman Doktor",
+        "Veteriner Hekim",
+        "Veteriner Teknikeri"
+      ]
+    },
+    {
+      "name": "Satış",
+      "id": "satis",
+      "positions": [
+        "Akaryakıt İstasyonu Elemanı",
+        "Gayrimenkul Danışmanlığı",
+        "Reklam Satış Temsilcisi",
+        "Sağlık ve Güzellik Ürünleri Satış Temsilcisi",
+        "Saha Satış Temsilcisi",
+        "Satış Destek Uzmanı",
+        "Satış Pazarlama Elemanı",
+        "Sigorta ve Emeklilik Satış Temsilcisi",
+        "Su ve Tüp Dağıtım Elemanı",
+        "Şube ve Bayi Satış Temsilcisi",
+        "Tele Satış Temsilcisi"
+      ]
+    },
+    {
+      "name": "Tamir & Bakım",
+      "id": "tamir",
+      "positions": [
+        "Araç Tamir, Bakım & Temizlik",
+        "Bina Yönetimi",
+        "Çilingir",
+        "Elektrik İşleri",
+        "Elektronik Tamir, Bakım",
+        "İlaçlama İşleri",
+        "İnşaat İşleri",
+        "Tesisat İşleri",
+        "Oto Tamir Ustası",
+        "Oto Kaporta & Boya Ustası",
+        "Oto Elektrikçisi",
+        "Lastikçi",
+        "Beyaz Eşya Servis Teknisyeni",
+        "Klima & Soğutma Teknisyeni",
+        "Saatçi",
+        "Oto Camcısı",
+        "Oto Kuaför Elemanı"
+      ]
+    },
+    {
+      "name": "Tarım & Hayvancılık",
+      "id": "tarim",
+      "positions": [
+        "Bahçıvan",
+        "Tarım İşçisi",
+        "Arıcılık",
+        "Balıkçılık",
+        "Büyükbaş ve Küçükbaş Hayvancılığı",
+        "Kümes Hayvancılığı",
+        "Hayvan Bakıcılığı",
+        "Çiftçi",
+        "Çoban",
+        "At Yetiştiricisi",
+        "Ahırcı",
+        "Çiftlik Yöneticisi",
+        "Su Ürünleri İşleme Elemanı",
+        "Sebze ve Meyve İşleme Elemanı",
+        "Çapacı"
+      ]
+    },
+    {
+      "name": "Tasarım & Yaratıcılık",
+      "id": "tasarim",
+      "positions": [
+        "Animasyon ve Multimedia",
+        "Çeviri & Tercümanlık",
+        "Editör",
+        "Endüstriyel Tasarım",
+        "Fotoğraf & Video",
+        "Grafik Tasarımcısı",
+        "Metin Yazarı",
+        "Mimar ve İç Mimar",
+        "Moda ve Aksesuar Tasarımcısı",
+        "Montaj & Kurgu",
+        "Müzik & Ses",
+        "Peyzaj Mimarı",
+        "Ressam & Heykeltıraş",
+        "Sanat Yönetmenliği",
+        "Senarist"
+      ]
+    },
+    {
+      "name": "Tekstil & Konfeksiyon",
+      "id": "tekstil",
+      "positions": [
+        "Model Makineci",
+        "Düz Makinacı",
+        "Overlokçu",
+        "Ortacı",
+        "Son Ütücü",
+        "Makastar",
+        "Reşmeci",
+        "Modelist",
+        "Stilist",
+        "Üretim Mühendisi",
+        "Merchandiser",
+        "Fason Takip Sorumlusu (Inspector)",
+        "Depo Elemanı",
+        "Kalite Kontrol Sorumlusu",
+        "Terzi",
+        "Prova Mankeni",
+        "Tekstil ve Konfeksiyon Yöneticisi",
+        "Planlama ve Operasyon Uzmanı",
+        "Yıkamacı",
+        "Diğer Tekstil İşleri"
+      ]
+    },
+    {
+      "name": "Üretim & İmalat",
+      "id": "uretim",
+      "positions": [
+        "3D Yazıcı Operatörü",
+        "Bakım Teknisyeni",
+        "CAD/CAM Teknisyeni",
+        "CNC Operatörü",
+        "Döküm Ustası",
+        "Gıda Üretimi",
+        "Kalıpçı",
+        "Kalite Kontrol Sorumlusu",
+        "Kaynakçı",
+        "Kompozit Malzeme Üretim Elemanı",
+        "Makine Montaj Elemanı",
+        "Makine Teknikeri",
+        "Marangoz",
+        "Mobilya Ustası",
+        "Montaj Ustası",
+        "Otomasyon Teknisyeni",
+        "Plastik & Metal Enjeksiyon Ustası",
+        "Pres Operatörü",
+        "Proses Operatörü",
+        "PVC Alüminyum Doğrama Ustası",
+        "Robot Operatörü",
+        "Sac Metal İşleme Ustası",
+        "Teknik Ressam",
+        "Tekstil Üretim Elemanı",
+        "Test Operatörü",
+        "Torna & Freze Ustası",
+        "Üretim Elemanı",
+        "Üretim Müdürü",
+        "Cam İşçisi",
+        "Çömlekçi",
+        "Geri Dönüşüm İşçisi",
+        "Ambalaj Üretim Elemanı",
+        "Plastik Enjeksiyon Operatörü",
+        "Seramik & Cam Teknolojisti",
+        "Soğuk Hava Depo İşçisi"
+      ]
+    },
+    {
+      "name": "Lojistik & Taşıma",
+      "id": "lojistik",
+      "positions": [
+        "Dağıtım Personeli",
+        "Depo Sevkiyat Sorumlusu",
+        "Forklift Operatörü",
+        "Gemi Personeli & Denizci",
+        "İthalat ve İhracat Uzmanı",
+        "Kargo",
+        "Pilot",
+        "Satın Alma Sorumlusu",
+        "Şoför",
+        "Taşıma Elemanı",
+        "Tır Şoförü",
+        "Taksi Şoförü",
+        "Servis Şoförü",
+        "Otobüs Muavini",
+        "Vidanjör Operatörü",
+        "Hamal / Elle Taşıma İşçisi",
+        "Yükleme Boşaltma İşçisi",
+        "Palet Taşıma Görevlisi",
+        "Paket Teslim Elemanı"
+      ]
+    },
+    {
+      "name": "Mağazacılık ve Perakendecilik",
+      "id": "magzacilik",
+      "positions": [
+        "Mağaza Satış Danışmanı",
+        "Kasiyer",
+        "Reyon Sorumlusu",
+        "Tezgahtar",
+        "Depo Sorumlusu",
+        "Şarküteri Sorumlusu",
+        "Kasap",
+        "Kategori Uzmanı",
+        "Mağaza ve Perakende Yöneticisi",
+        "Sakatatçı",
+        "Pazarcı",
+        "Aktar",
+        "Manav"
+      ]
+    },
+    {
+      "name": "Muhasebe & Finans",
+      "id": "muhasebe",
+      "positions": [
+        "Audit",
+        "Finansal Kontrol",
+        "Genel Muhasebe",
+        "Gişe Görevlisi",
+        "Güvenlik Elemanı",
+        "Kredi Analizi",
+        "Kredi ve Mortgage Uzmanı",
+        "Kurumsal Finans",
+        "Kurumsal Muhasebe",
+        "Ön Muhasebe",
+        "Risk Yönetimi",
+        "Şube Yönetimi",
+        "Tahsilat",
+        "Vergi Muhasebesi",
+        "Yatırım Danışmanlığı"
+      ]
+    }
+  ]
+}

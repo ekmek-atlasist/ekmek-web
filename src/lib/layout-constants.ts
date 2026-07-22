@@ -1,0 +1,1 @@
+export const GLOBAL_HEADER_HEIGHT_PX = 72;

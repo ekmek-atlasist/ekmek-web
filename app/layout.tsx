@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Smartphone } from "lucide-react";
+import { SiteChrome } from "../src/components/site-chrome";
 import "../src/app/globals.css";
 
 const geistSans = Geist({
@@ -67,7 +68,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-screen flex flex-col">
+      <body className="flex min-h-screen w-full flex-col overflow-x-hidden">
         <div
           role="alertdialog"
           aria-modal="true"
@@ -93,7 +94,7 @@ export default function RootLayout({
             Ekmek dikey modda kullanılmak için tasarlandı.
           </p>
         </div>
-        <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );
