@@ -36,35 +36,44 @@ export function SiteFooter({ className }: SiteFooterProps) {
             className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-white/65"
             aria-label="Yasal"
           >
-            <a href="#" className="transition-colors hover:text-white">
-              Gizlilik Politikası
-            </a>
-            <a href="#" className="transition-colors hover:text-white">
-              Kullanım Koşulları
-            </a>
-            <a href="#" className="transition-colors hover:text-white">
-              KVKK
-            </a>
             <Link
-              href="/isveren/panel/destek"
+              href="/yasal/gizlilik"
+              className="transition-colors hover:text-white"
+            >
+              Gizlilik Politikası
+            </Link>
+            <Link
+              href="/yasal/kullanim-kosullari"
+              className="transition-colors hover:text-white"
+            >
+              Kullanım Koşulları
+            </Link>
+            <Link
+              href="/yasal/gizlilik"
+              className="transition-colors hover:text-white"
+            >
+              KVKK
+            </Link>
+            <Link
+              href="/destek"
               className="transition-colors hover:text-white"
             >
               Destek
             </Link>
             <Link
-              href="/isveren/panel/sss"
+              href="/yasal/sss"
               className="transition-colors hover:text-white"
             >
               Sık Sorulan Sorular
             </Link>
             <Link
-              href="/isveren/panel/guvenli-kullanim"
+              href="/yasal/guvenli-kullanim"
               className="transition-colors hover:text-white"
             >
               Güvenli Kullanım
             </Link>
             <Link
-              href="/isveren/panel/topluluk-kurallari"
+              href="/yasal/topluluk-kurallari"
               className="transition-colors hover:text-white"
             >
               Topluluk Kuralları

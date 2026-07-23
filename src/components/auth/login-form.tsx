@@ -11,7 +11,7 @@ import { doc, getDoc } from "firebase/firestore";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent } from "react";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, Smartphone, UserRoundX } from "lucide-react";
 import {
   digitsOnly,
   formatPhoneForDisplay,
@@ -203,18 +203,22 @@ function AuthHero({
   stage: Stage;
 }) {
   const title =
-    stage === "otp"
-      ? "Doğrulama Kodu"
-      : mode === "register"
-        ? "İşveren Kaydı"
-        : "İşveren Girişi";
+    stage === "bireysel"
+      ? "Farklı hesap türü"
+      : stage === "otp"
+        ? "Doğrulama Kodu"
+        : mode === "register"
+          ? "İşveren Kaydı"
+          : "İşveren Girişi";
 
   const subtitle =
-    stage === "otp"
-      ? "SMS ile gelen kodu gir"
-      : mode === "register"
-        ? "Telefon numaranı doğrula"
-        : "Telefon numaranla giriş yap";
+    stage === "bireysel"
+      ? "Bu alan yalnızca işveren hesapları içindir"
+      : stage === "otp"
+        ? "SMS ile gelen kodu gir"
+        : mode === "register"
+          ? "Telefon numaranı doğrula"
+          : "Telefon numaranla giriş yap";
 
   return (
     <div className="relative overflow-visible rounded-t-2xl bg-[#0f2540] px-5 pt-5 pb-8 sm:px-6 sm:pt-6 sm:pb-10">
@@ -407,7 +411,7 @@ export function LoginForm({
 
   return (
     <div className={className}>
-      {stage === "phone" || stage === "otp" ? (
+      {stage === "phone" || stage === "otp" || stage === "bireysel" ? (
         <AuthHero mode={mode} stage={stage} />
       ) : null}
 
@@ -536,18 +540,42 @@ export function LoginForm({
       ) : null}
 
       {stage === "bireysel" ? (
-        <div className="py-4">
-          <AuthHero mode={mode} stage="phone" />
-          <h3 className="mt-6 text-lg font-bold text-[#1a1a1a]">
-            Bu panel işverenler için
-          </h3>
-          <p className="mt-3 text-sm leading-relaxed text-[#1a1a1a]/70">
-            Hesabın bireysel (iş arayan) olarak kayıtlı. İş aramak için mobil
-            uygulamamızı kullanabilirsin.
-          </p>
+        <div className="px-5 pb-6 pt-5 sm:px-6">
+          <div className="rounded-2xl border border-amber-200/90 bg-gradient-to-br from-amber-50 to-orange-50/40 p-4 sm:p-5">
+            <div className="flex gap-3.5">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 ring-1 ring-amber-200/80">
+                <UserRoundX className="size-5" strokeWidth={2.25} aria-hidden />
+              </span>
+              <div className="min-w-0 pt-0.5">
+                <h3 className="text-base font-bold leading-snug text-[#0f2540] sm:text-[1.05rem]">
+                  Bu panel işverenler için
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-[#1a1a1a]/70">
+                  <span className="font-medium text-[#0f2540]">
+                    {formatPhoneForDisplay(phoneDigits)}
+                  </span>
+                  {" "}numarası bireysel (iş arayan) hesap olarak kayıtlı.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 flex gap-3 rounded-2xl border border-neutral-200/80 bg-[#f8f9fb] p-4">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#036AAF] shadow-sm ring-1 ring-black/[0.04]">
+              <Smartphone className="size-5" strokeWidth={2} aria-hidden />
+            </span>
+            <p className="text-sm leading-relaxed text-[#1a1a1a]/70">
+              İş aramak ve başvuru yapmak için{" "}
+              <span className="font-semibold text-[#0f2540]">Ekmek mobil uygulamasını</span>{" "}
+              kullanabilirsin.
+            </p>
+          </div>
 
           {error ? (
-            <p className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+            <p
+              className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
+              role="alert"
+            >
               {error}
             </p>
           ) : null}
@@ -556,10 +584,14 @@ export function LoginForm({
             type="button"
             onClick={handleSignOut}
             disabled={isSigningOut}
-            className="mt-6 w-full rounded-xl bg-[#036AAF] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#025a94] disabled:opacity-60"
+            className="mt-5 w-full rounded-xl bg-[#036AAF] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#025a94] disabled:opacity-60"
           >
             {isSigningOut ? "Çıkış yapılıyor..." : "Çıkış Yap"}
           </button>
+
+          <p className="mt-3 text-center text-xs leading-relaxed text-[#1a1a1a]/45">
+            İşveren hesabın varsa farklı bir numara ile tekrar giriş yap.
+          </p>
         </div>
       ) : null}
 
