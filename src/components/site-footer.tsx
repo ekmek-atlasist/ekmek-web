@@ -61,6 +61,12 @@ export function SiteFooter({ className }: SiteFooterProps) {
               Destek
             </Link>
             <Link
+              href="/hesap-silme"
+              className="transition-colors hover:text-white"
+            >
+              Hesap Silme
+            </Link>
+            <Link
               href="/yasal/sss"
               className="transition-colors hover:text-white"
             >
