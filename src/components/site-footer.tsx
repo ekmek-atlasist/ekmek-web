@@ -52,7 +52,7 @@ export function SiteFooter({ className }: SiteFooterProps) {
               href="/yasal/gizlilik"
               className="transition-colors hover:text-white"
             >
-              KVKK
+              KVKK Aydınlatma Metni
             </Link>
             <Link
               href="/destek"
