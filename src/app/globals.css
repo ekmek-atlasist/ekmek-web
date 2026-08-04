@@ -47,6 +47,17 @@
   }
 }
 
+@keyframes legal-paper-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @layer utilities {
   .animate-marquee {
     animation: marquee 42s linear infinite;
@@ -54,5 +65,9 @@
 
   .animate-marquee-reverse {
     animation: marquee-reverse 42s linear infinite;
+  }
+
+  .legal-paper-enter {
+    animation: legal-paper-reveal 0.55s ease-out both;
   }
 }

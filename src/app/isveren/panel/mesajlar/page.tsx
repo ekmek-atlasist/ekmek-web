@@ -153,19 +153,19 @@ const EKMEK_TEAM_LINKS = [
   {
     icon: HelpCircle,
     label: "Sık Sorulan Sorular",
-    href: "/yasal/sss",
+    href: "/sss",
     useRouter: false,
   },
   {
     icon: Shield,
     label: "Güvenli Kullanım İpuçları",
-    href: "/yasal/guvenli-kullanim",
+    href: "/guvenli-kullanim",
     useRouter: false,
   },
   {
     icon: Users,
     label: "Topluluk Kuralları",
-    href: "/yasal/topluluk-kurallari",
+    href: "/topluluk-kurallari",
     useRouter: false,
   },
 ] as const;

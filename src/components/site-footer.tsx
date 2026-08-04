@@ -37,19 +37,19 @@ export function SiteFooter({ className }: SiteFooterProps) {
             aria-label="Yasal"
           >
             <Link
-              href="/yasal/gizlilik"
+              href="/gizlilik"
               className="transition-colors hover:text-white"
             >
               Gizlilik Politikası
             </Link>
             <Link
-              href="/yasal/kullanim-kosullari"
+              href="/kullanim-kosullari"
               className="transition-colors hover:text-white"
             >
               Kullanım Koşulları
             </Link>
             <Link
-              href="/yasal/gizlilik"
+              href="/gizlilik"
               className="transition-colors hover:text-white"
             >
               KVKK Aydınlatma Metni
@@ -67,19 +67,19 @@ export function SiteFooter({ className }: SiteFooterProps) {
               Hesap Silme
             </Link>
             <Link
-              href="/yasal/sss"
+              href="/sss"
               className="transition-colors hover:text-white"
             >
               Sık Sorulan Sorular
             </Link>
             <Link
-              href="/yasal/guvenli-kullanim"
+              href="/guvenli-kullanim"
               className="transition-colors hover:text-white"
             >
               Güvenli Kullanım
             </Link>
             <Link
-              href="/yasal/topluluk-kurallari"
+              href="/topluluk-kurallari"
               className="transition-colors hover:text-white"
             >
               Topluluk Kuralları

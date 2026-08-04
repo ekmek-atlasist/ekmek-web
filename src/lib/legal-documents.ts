@@ -1,20 +1,3 @@
-export type LegalDocumentType =
-  | "privacy"
-  | "terms"
-  | "community_guidelines"
-  | "safe_usage_tips"
-  | "faq";
-
-export type LegalDocumentRole = "aday" | "kurumsal";
-
-export const LEGAL_SLUG_TO_TYPE: Record<string, LegalDocumentType> = {
-  gizlilik: "privacy",
-  "kullanim-kosullari": "terms",
-  "topluluk-kurallari": "community_guidelines",
-  "guvenli-kullanim": "safe_usage_tips",
-  sss: "faq",
-};
-
 export type LegalDocumentSection = {
   title: string;
   body: string;
@@ -31,29 +14,31 @@ export type LegalDocument = {
   updatedAt?: unknown;
 };
 
-export function resolveLegalDocumentType(slug: string): LegalDocumentType | null {
-  return LEGAL_SLUG_TO_TYPE[slug] ?? null;
-}
-
-export function buildLegalDocumentId(
-  role: LegalDocumentRole,
-  type: LegalDocumentType,
-): string {
-  return `${role}_${type}`;
-}
-
-export const LEGAL_ROLE_LABELS: Record<
-  LegalDocumentRole,
-  { tab: string; onlyNotice: string }
-> = {
-  aday: {
-    tab: "İş Arayanlar",
-    onlyNotice: "Bu metin yalnızca iş arayanlar için geçerlidir.",
+export const LEGAL_DUAL_ROUTE_CONFIG = {
+  gizlilik: {
+    adayDocId: "aday_privacy",
+    kurumsalDocId: "kurumsal_privacy",
   },
-  kurumsal: {
-    tab: "İşverenler",
-    onlyNotice: "Bu metin yalnızca işverenler için geçerlidir.",
+  "kullanim-kosullari": {
+    adayDocId: "aday_terms",
+    kurumsalDocId: "kurumsal_terms",
   },
-};
+  "topluluk-kurallari": {
+    adayDocId: "aday_community_guidelines",
+    kurumsalDocId: "kurumsal_community_guidelines",
+  },
+  "guvenli-kullanim": {
+    adayDocId: "aday_safe_usage_tips",
+    kurumsalDocId: "kurumsal_safe_usage_tips",
+  },
+  sss: {
+    adayDocId: "aday_faq",
+    kurumsalDocId: "kurumsal_faq",
+  },
+} as const;
 
-export const DUAL_AUDIENCE_SLUGS = new Set(["gizlilik", "kullanim-kosullari"]);
+export type LegalDualRouteKey = keyof typeof LEGAL_DUAL_ROUTE_CONFIG;
+
+export function getLegalDualRouteConfig(routeKey: LegalDualRouteKey) {
+  return LEGAL_DUAL_ROUTE_CONFIG[routeKey];
+}
