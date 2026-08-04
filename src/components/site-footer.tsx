@@ -40,19 +40,13 @@ export function SiteFooter({ className }: SiteFooterProps) {
               href="/gizlilik"
               className="transition-colors hover:text-white"
             >
-              Gizlilik Politikası
+              Gizlilik ve KVKK Aydınlatma Metni
             </Link>
             <Link
               href="/kullanim-kosullari"
               className="transition-colors hover:text-white"
             >
               Kullanım Koşulları
-            </Link>
-            <Link
-              href="/gizlilik"
-              className="transition-colors hover:text-white"
-            >
-              KVKK Aydınlatma Metni
             </Link>
             <Link
               href="/destek"
