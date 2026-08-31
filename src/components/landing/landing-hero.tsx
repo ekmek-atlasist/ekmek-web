@@ -16,7 +16,7 @@ export function LandingHero({ onScrollToApp }: LandingHeroProps) {
   const [employerNoticeOpen, setEmployerNoticeOpen] = useState(false);
 
   function scrollToNextSection() {
-    const next = document.getElementById("nasil-calisir");
+    const next = document.getElementById("kategoriler");
     next?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 

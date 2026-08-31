@@ -24,6 +24,10 @@ export function isValidOtpCode(code: string): boolean {
   return code.length === 6;
 }
 
+function normalizeErrorCode(code: string): string {
+  return code.replace(/^functions\//, "");
+}
+
 function getAuthErrorMessage(code: string): string {
   switch (code) {
     case "auth/invalid-phone-number":
@@ -53,9 +57,32 @@ function getAuthErrorMessage(code: string): string {
   }
 }
 
+function getFunctionsErrorMessage(code: string): string {
+  switch (normalizeErrorCode(code)) {
+    case "already-exists":
+      return "Bu numarayla zaten bir hesap var. Giriş yapın.";
+    case "not-found":
+      return "Bu numarayla kayıtlı hesap bulunamadı. Önce kayıt olun.";
+    case "resource-exhausted":
+      return "Çok sık denediniz. Lütfen biraz bekleyin.";
+    case "deadline-exceeded":
+      return "Kodun süresi doldu. Tekrar kod isteyin.";
+    case "invalid-argument":
+      return "Girdiğiniz bilgi geçersiz.";
+    case "internal":
+      return "SMS gönderilemedi, lütfen tekrar deneyin.";
+    default:
+      return "Bir hata oluştu, tekrar deneyin.";
+  }
+}
+
 export function getLoginErrorMessage(error: unknown): string {
   if (error instanceof FirebaseError) {
+    if (error.code.startsWith("functions/")) {
+      return getFunctionsErrorMessage(error.code);
+    }
     return getAuthErrorMessage(error.code);
   }
-  return "Bir hata oluştu. Lütfen tekrar dene.";
+
+  return "Bir hata oluştu, tekrar deneyin.";
 }

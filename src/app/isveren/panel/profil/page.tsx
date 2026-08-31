@@ -17,7 +17,7 @@ import { Camera, Loader2, MapPin, Upload, UserX, X, ZoomIn } from "lucide-react"
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Cropper, { type Area, type Point } from "react-easy-crop";
-import { getCroppedImageBlob } from "../../kayit/crop-image";
+import { getCroppedImageBlob, EMPLOYER_LOGO_ASPECT } from "../../kayit/crop-image";
 import { findNearestDistrict } from "../../kayit/find-nearest-location";
 import {
   getStorageErrorMessage,
@@ -97,7 +97,8 @@ function PhotoCropModal({ imageSrc, onClose, onConfirm }: PhotoCropModalProps) {
     try {
       const blob = await getCroppedImageBlob(imageSrc, croppedAreaPixels);
       await onConfirm(blob);
-    } catch {
+    } catch (err) {
+      console.error("[Photo crop]", err);
       setCropError("Fotoğraf işlenemedi. Lütfen tekrar dene.");
     } finally {
       setIsProcessing(false);
@@ -114,7 +115,7 @@ function PhotoCropModal({ imageSrc, onClose, onConfirm }: PhotoCropModalProps) {
       <div className="flex w-full max-w-lg flex-col overflow-hidden rounded-3xl bg-[#0f2540] shadow-2xl">
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
           <h2 id="crop-title" className="text-lg font-semibold text-white">
-            Logoyu düzenle
+            Fotoğrafı kırp
           </h2>
           <button
             type="button"
@@ -132,7 +133,7 @@ function PhotoCropModal({ imageSrc, onClose, onConfirm }: PhotoCropModalProps) {
             image={imageSrc}
             crop={crop}
             zoom={zoom}
-            aspect={3 / 4}
+            aspect={EMPLOYER_LOGO_ASPECT}
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onCropComplete={onCropComplete}
@@ -651,7 +652,7 @@ export default function PanelProfilPage() {
       <div className={`${cardClassName} mt-6`}>
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-4">
-            <div className="relative size-20 shrink-0 overflow-hidden rounded-2xl bg-neutral-100 ring-1 ring-neutral-200">
+            <div className="relative aspect-[710/473] w-28 shrink-0 overflow-hidden rounded-2xl bg-neutral-100 ring-1 ring-neutral-200 sm:w-32">
               {logoPreview ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -715,7 +716,7 @@ export default function PanelProfilPage() {
               )}
             </button>
             <p className="text-xs text-neutral-400">
-              Önerilen: dikey fotoğraf
+              Önerilen: yatay fotoğraf
             </p>
           </div>
         </div>

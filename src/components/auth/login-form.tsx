@@ -1,16 +1,12 @@
 "use client";
 
 import { FirebaseError } from "firebase/app";
-import {
-  ConfirmationResult,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-  signOut,
-} from "firebase/auth";
+import { signInWithCustomToken, signOut } from "firebase/auth";
+import { httpsCallable } from "firebase/functions";
 import { doc, getDoc } from "firebase/firestore";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent } from "react";
+import { useRef, useState, type ClipboardEvent, type KeyboardEvent } from "react";
 import { Check, Loader2, Smartphone, UserRoundX } from "lucide-react";
 import {
   digitsOnly,
@@ -20,7 +16,11 @@ import {
   isValidOtpCode,
   isValidPhoneDigits,
 } from "@/lib/auth/login-helpers";
-import { auth, db } from "@/lib/firebase";
+import {
+  clearVerifiedPhoneE164,
+  storeVerifiedPhoneE164,
+} from "@/lib/auth/verified-phone";
+import { auth, db, functions } from "@/lib/firebase";
 
 type Stage = "phone" | "otp" | "redirecting" | "bireysel";
 
@@ -28,11 +28,24 @@ type UserDoc = {
   userType?: string;
 };
 
+type OtpMode = "login" | "register";
+
+type SendOtpResponse = {
+  success: boolean;
+  expiresInSeconds: number;
+};
+
+type VerifyOtpResponse = {
+  token: string;
+  uid: string;
+  mode: OtpMode;
+};
+
 export type LoginFormMode = "login" | "register";
 
 type LoginFormProps = {
   mode?: LoginFormMode;
-  recaptchaContainerId?: string;
+  formIdPrefix?: string;
   className?: string;
   onComplete?: () => void;
 };
@@ -243,9 +256,17 @@ function AuthHero({
   );
 }
 
+function logAuthError(scope: string, err: unknown) {
+  if (err instanceof FirebaseError) {
+    console.error(`[${scope}]`, err.code, err.message, err);
+    return;
+  }
+  console.error(`[${scope}]`, err);
+}
+
 export function LoginForm({
   mode = "login",
-  recaptchaContainerId = "recaptcha-container",
+  formIdPrefix = "login-form",
   className = "",
   onComplete,
 }: LoginFormProps) {
@@ -257,35 +278,11 @@ export function LoginForm({
   const [isSending, setIsSending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
-
-  const confirmationResultRef = useRef<ConfirmationResult | null>(null);
-  const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
+  const [otpSessionActive, setOtpSessionActive] = useState(false);
 
   const phoneValid = isValidPhoneDigits(phoneDigits);
   const otpValid = isValidOtpCode(otpCode);
-
-  const clearRecaptcha = useCallback(() => {
-    recaptchaVerifierRef.current?.clear();
-    recaptchaVerifierRef.current = null;
-  }, []);
-
-  const createRecaptchaVerifier = useCallback(async () => {
-    clearRecaptcha();
-
-    const verifier = new RecaptchaVerifier(auth, recaptchaContainerId, {
-      size: "invisible",
-    });
-
-    recaptchaVerifierRef.current = verifier;
-    await verifier.render();
-    return verifier;
-  }, [clearRecaptcha, recaptchaContainerId]);
-
-  useEffect(() => {
-    return () => {
-      clearRecaptcha();
-    };
-  }, [clearRecaptcha]);
+  const phoneE164 = phoneValid ? `+90${phoneDigits}` : "";
 
   async function handleSendCode() {
     setError(null);
@@ -298,24 +295,18 @@ export function LoginForm({
     setIsSending(true);
 
     try {
-      const verifier = await createRecaptchaVerifier();
-      const phoneNumber = `+90${phoneDigits}`;
-      const confirmation = await signInWithPhoneNumber(
-        auth,
-        phoneNumber,
-        verifier,
-      );
+      const sendOtp = httpsCallable<
+        { e164: string; mode: OtpMode },
+        SendOtpResponse
+      >(functions, "sendOtp");
 
-      confirmationResultRef.current = confirmation;
+      await sendOtp({ e164: phoneE164, mode });
+
       setOtpCode("");
+      setOtpSessionActive(true);
       setStage("otp");
     } catch (err) {
-      clearRecaptcha();
-      if (err instanceof FirebaseError) {
-        console.error("[Phone OTP send]", err.code, err.message, err);
-      } else {
-        console.error("[Phone OTP send]", err);
-      }
+      logAuthError("OTP send", err);
       setError(getLoginErrorMessage(err));
     } finally {
       setIsSending(false);
@@ -330,8 +321,7 @@ export function LoginForm({
       return;
     }
 
-    const confirmation = confirmationResultRef.current;
-    if (!confirmation) {
+    if (!otpSessionActive || !phoneE164) {
       setError("Doğrulama oturumu bulunamadı. Lütfen tekrar kod iste.");
       setStage("phone");
       return;
@@ -340,13 +330,25 @@ export function LoginForm({
     setIsVerifying(true);
 
     try {
-      const result = await confirmation.confirm(otpCode);
+      const verifyOtp = httpsCallable<
+        { e164: string; code: string },
+        VerifyOtpResponse
+      >(functions, "verifyOtp");
+
+      const result = await verifyOtp({ e164: phoneE164, code: otpCode });
+      const { token, uid } = result.data;
+
+      storeVerifiedPhoneE164(phoneE164);
+      await signInWithCustomToken(auth, token);
+
       setIsVerifying(false);
       setStage("redirecting");
       setError(null);
 
+      const resolvedUid = auth.currentUser?.uid ?? uid;
+
       try {
-        const userDoc = await getDoc(doc(db, "users", result.user.uid));
+        const userDoc = await getDoc(doc(db, "users", resolvedUid));
 
         if (!userDoc.exists()) {
           onComplete?.();
@@ -373,11 +375,7 @@ export function LoginForm({
         setError("Bir hata oluştu, tekrar dene");
       }
     } catch (err) {
-      if (err instanceof FirebaseError) {
-        console.error("[Phone OTP verify]", err.code, err.message, err);
-      } else {
-        console.error("[Phone OTP verify]", err);
-      }
+      logAuthError("OTP verify", err);
       setError(getLoginErrorMessage(err));
       setIsVerifying(false);
     }
@@ -389,10 +387,10 @@ export function LoginForm({
 
     try {
       await signOut(auth);
+      clearVerifiedPhoneE164();
       setPhoneDigits("");
       setOtpCode("");
-      confirmationResultRef.current = null;
-      clearRecaptcha();
+      setOtpSessionActive(false);
       setStage("phone");
     } catch {
       setError("Çıkış yapılamadı. Lütfen tekrar dene.");
@@ -404,8 +402,7 @@ export function LoginForm({
   function handleChangeNumber() {
     setError(null);
     setOtpCode("");
-    confirmationResultRef.current = null;
-    clearRecaptcha();
+    setOtpSessionActive(false);
     setStage("phone");
   }
 
@@ -425,14 +422,14 @@ export function LoginForm({
       {stage === "phone" ? (
         <div>
           <label
-            htmlFor={`phone-${recaptchaContainerId}`}
+            htmlFor={`phone-${formIdPrefix}`}
             className="mb-2.5 block text-sm font-medium text-[#1a1a1a]/70"
           >
             Cep telefonu
           </label>
 
           <PhoneNumberField
-            id={`phone-${recaptchaContainerId}`}
+            id={`phone-${formIdPrefix}`}
             digits={phoneDigits}
             valid={phoneValid}
             disabled={isSending}
@@ -450,7 +447,7 @@ export function LoginForm({
 
           <button
             type="button"
-            onClick={handleSendCode}
+            onClick={() => void handleSendCode()}
             disabled={isSending || !phoneValid}
             className="mt-5 w-full rounded-xl bg-[#036AAF] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#025a94] disabled:opacity-45"
           >
@@ -470,7 +467,7 @@ export function LoginForm({
 
           <div className="relative mt-4">
             <OtpBoxes
-              idPrefix={`otp-${recaptchaContainerId}`}
+              idPrefix={`otp-${formIdPrefix}`}
               value={otpCode}
               onChange={(next) => {
                 setOtpCode(next);
@@ -497,7 +494,7 @@ export function LoginForm({
 
           <button
             type="button"
-            onClick={handleVerifyCode}
+            onClick={() => void handleVerifyCode()}
             disabled={isVerifying || !otpValid}
             className="mt-5 w-full rounded-xl bg-[#036AAF] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#025a94] disabled:opacity-45"
           >
@@ -582,7 +579,7 @@ export function LoginForm({
 
           <button
             type="button"
-            onClick={handleSignOut}
+            onClick={() => void handleSignOut()}
             disabled={isSigningOut}
             className="mt-5 w-full rounded-xl bg-[#036AAF] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#025a94] disabled:opacity-60"
           >
@@ -594,8 +591,6 @@ export function LoginForm({
           </p>
         </div>
       ) : null}
-
-      <div id={recaptchaContainerId} />
     </div>
   );
 }

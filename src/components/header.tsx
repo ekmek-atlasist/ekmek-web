@@ -8,7 +8,6 @@ import { useEffect, useRef, useState } from "react";
 import { useAuthModal } from "@/components/auth/auth-modal";
 import { PanelHeaderNav } from "@/components/panel/panel-header-nav";
 import { useOptionalPanelHeader } from "@/components/panel/panel-header-context";
-import { GLOBAL_HEADER_HEIGHT_PX } from "@/lib/layout-constants";
 
 export default function Header() {
   const pathname = usePathname();
@@ -20,9 +19,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [employerMenuOpen, setEmployerMenuOpen] = useState(false);
 
-  const isLanding = pathname === "/";
   const isPanel = pathname.startsWith("/isveren/panel");
-  const showNotifyButton = isLanding;
   const showEmployerActions = !isPanel;
 
   const headerBackground = scrolled
@@ -98,10 +95,9 @@ export default function Header() {
         />
       ) : null}
 
-      {!isPanel && (showEmployerActions || showNotifyButton) ? (
+      {!isPanel && showEmployerActions ? (
         <div className="flex shrink-0 items-center gap-3">
-          {showEmployerActions ? (
-            <div ref={menuRef} className="relative">
+          <div ref={menuRef} className="relative">
               <button
                 type="button"
                 onClick={() => setEmployerMenuOpen((open) => !open)}
@@ -165,31 +161,7 @@ export default function Header() {
                   </button>
                 </div>
               ) : null}
-            </div>
-          ) : null}
-
-          {showNotifyButton ? (
-            <a
-              href="#notify"
-              onClick={(e) => {
-                e.preventDefault();
-                const hero = document.getElementById("hero");
-                const headerH = GLOBAL_HEADER_HEIGHT_PX;
-                if (hero) {
-                  const top = hero.offsetTop + hero.offsetHeight - headerH;
-                  window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-                } else {
-                  document.getElementById("notify")?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                  });
-                }
-              }}
-              className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#0f2540] transition-colors duration-200 hover:bg-neutral-200"
-            >
-              Haberdar Et
-            </a>
-          ) : null}
+          </div>
         </div>
       ) : null}
     </header>

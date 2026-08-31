@@ -80,7 +80,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
             <LoginForm
               key={formKey}
               mode={mode}
-              recaptchaContainerId="recaptcha-container-modal"
+              formIdPrefix="auth-modal-form"
               onComplete={closeAuthModal}
               className="overflow-visible"
             />

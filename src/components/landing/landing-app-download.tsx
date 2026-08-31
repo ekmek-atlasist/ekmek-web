@@ -1,6 +1,7 @@
 "use client";
 
-import { Apple } from "lucide-react";
+import Image from "next/image";
+import { Apple, Download, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import {
   APP_STORE_URL,
@@ -36,38 +37,6 @@ function GooglePlayIcon({ className }: { className?: string }) {
   );
 }
 
-function PhoneMockup({
-  label,
-  tilt,
-}: {
-  label: string;
-  tilt: string;
-}) {
-  return (
-    <div
-      className={`relative mx-auto w-[11.5rem] sm:w-[12.5rem] ${tilt}`}
-    >
-      <div className="rounded-[2.5rem] border-[10px] border-[#0f2540] bg-[#0f2540] p-1 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
-        <div className="overflow-hidden rounded-[2rem] bg-neutral-200">
-          <div className="flex h-[22rem] flex-col items-center justify-center bg-gradient-to-b from-neutral-100 to-neutral-200 px-4 text-center sm:h-[24rem]">
-            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#0f2540]/45">
-              Placeholder
-            </span>
-            <p className="mt-2 text-sm font-medium leading-snug text-[#0f2540]/70">
-              {label}
-            </p>
-            {/*
-              Gerçek ekran görüntüsü için:
-              <Image src="/screenshots/feed.png" alt="" fill className="object-cover" />
-            */}
-          </div>
-        </div>
-      </div>
-      <div className="absolute top-3 left-1/2 h-1.5 w-16 -translate-x-1/2 rounded-full bg-black/80" />
-    </div>
-  );
-}
-
 function StoreButton({
   href,
   icon,
@@ -82,14 +51,16 @@ function StoreButton({
   const enabled = href.length > 0;
   const content = (
     <>
-      <span className="flex size-9 items-center justify-center rounded-lg bg-white/10">
+      <span className="flex size-10 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/10">
         {icon}
       </span>
       <span className="text-left">
-        <span className="block text-[10px] uppercase tracking-wide text-white/70">
+        <span className="block text-[10px] font-medium uppercase tracking-[0.12em] text-white/65">
           {subtitle}
         </span>
-        <span className="block text-sm font-semibold text-white">{title}</span>
+        <span className="block text-sm font-semibold text-white sm:text-[0.9375rem]">
+          {title}
+        </span>
       </span>
       {!enabled ? (
         <span className="ml-auto rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white/85">
@@ -105,7 +76,7 @@ function StoreButton({
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex w-full items-center gap-3 rounded-2xl bg-black px-4 py-3.5 transition-colors hover:bg-neutral-900 sm:w-auto sm:min-w-[15rem]"
+        className="group inline-flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-3.5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.12] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25)] sm:w-auto sm:min-w-[16rem]"
       >
         {content}
       </a>
@@ -115,63 +86,114 @@ function StoreButton({
   return (
     <div
       aria-disabled="true"
-      className="inline-flex w-full cursor-not-allowed items-center gap-3 rounded-2xl bg-black/80 px-4 py-3.5 opacity-90 sm:w-auto sm:min-w-[15rem]"
+      className="inline-flex w-full cursor-not-allowed items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.05] px-4 py-3.5 opacity-80 sm:w-auto sm:min-w-[16rem]"
     >
       {content}
     </div>
   );
 }
 
+const screenshots = [
+  {
+    src: "/screenshots/app-feed.png",
+    alt: "Ekmek uygulamasında ilan kaydırma ekranı",
+    tilt: "-rotate-3 sm:-rotate-6",
+    zIndex: "z-[1]",
+  },
+  {
+    src: "/screenshots/app-profile.png",
+    alt: "Ekmek uygulamasında profil oluşturma ekranı",
+    tilt: "rotate-3 sm:rotate-6",
+    zIndex: "z-[2]",
+  },
+];
+
 export function LandingAppDownload() {
   return (
     <section
       id="uygulama"
-      className="scroll-mt-[72px] bg-[#0f2540] px-6 py-20 md:px-10 md:py-28"
+      className="relative scroll-mt-[72px] overflow-hidden bg-[#0f2540] px-6 py-20 md:px-10 md:py-28"
       aria-labelledby="uygulama-baslik"
     >
-      <FadeInSection className="mx-auto max-w-6xl">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2
-            id="uygulama-baslik"
-            className="text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl"
-          >
-            Ekmek&apos;i cebine indir
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-white/75 md:text-lg">
-            İş aramak hiç bu kadar kolay olmamıştı. Uygulamayı indir, birkaç
-            dakikada profilini oluştur.
-          </p>
-        </div>
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_20%_50%,rgba(3,106,175,0.25),transparent)]"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -right-32 top-0 size-96 rounded-full bg-[#036AAF]/10 blur-3xl"
+        aria-hidden
+      />
 
-        <div className="mt-14 flex flex-col items-center gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
-          <div className="flex w-full max-w-xl items-end justify-center gap-4 sm:gap-6 lg:max-w-none lg:flex-1">
-            <PhoneMockup
-              label="Ekran görüntüsü yakında"
-              tilt="-rotate-6 translate-y-3 opacity-90"
-            />
-            <PhoneMockup
-              label="Ekran görüntüsü yakında"
-              tilt="relative z-[1] scale-105"
-            />
-            <PhoneMockup
-              label="Ekran görüntüsü yakında"
-              tilt="rotate-6 translate-y-3 opacity-90 hidden sm:block"
-            />
+      <FadeInSection className="relative mx-auto max-w-6xl">
+        <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+          <div className="text-center lg:text-left">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#7ec8ff]">
+              <Download className="size-3.5" aria-hidden />
+              Mobil uygulama
+            </span>
+            <h2
+              id="uygulama-baslik"
+              className="mt-5 text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-[2.75rem] lg:leading-[1.1]"
+            >
+              Ekmek&apos;i cebine indir
+            </h2>
+            <p className="mt-4 max-w-md text-base leading-relaxed text-white/70 sm:text-lg lg:mx-0 mx-auto">
+              Profilini dakikalar içinde oluştur, sana uygun ilanları keşfet ve
+              eşleştiğin işverenle anında konuş — hepsi telefonundan.
+            </p>
+
+            <ul className="mt-8 hidden space-y-3 text-left sm:block">
+              {[
+                "Kayıt ücretsiz, dakikalar içinde başla",
+                "CV yüklemeden profilini tamamla",
+                "Eşleşince doğrudan mesajlaş",
+              ].map((item) => (
+                <li
+                  key={item}
+                  className="flex items-center gap-3 text-sm text-white/75"
+                >
+                  <Sparkles className="size-4 shrink-0 text-[#7ec8ff]" aria-hidden />
+                  {item}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-10 flex flex-col items-center gap-3 lg:items-start">
+              <StoreButton
+                href={APP_STORE_URL}
+                icon={<Apple className="size-5" aria-hidden />}
+                subtitle="Download on the"
+                title="App Store'dan İndir"
+              />
+              <StoreButton
+                href={GOOGLE_PLAY_URL}
+                icon={<GooglePlayIcon className="size-5" />}
+                subtitle="Get it on"
+                title="Google Play'den İndir"
+              />
+            </div>
           </div>
 
-          <div className="flex w-full max-w-md flex-col items-center gap-3 lg:items-start">
-            <StoreButton
-              href={APP_STORE_URL}
-              icon={<Apple className="size-5" aria-hidden />}
-              subtitle="Download on the"
-              title="App Store'dan İndir"
+          <div className="relative mx-auto flex w-full max-w-lg items-end justify-center gap-3 sm:gap-5 lg:max-w-none lg:justify-end">
+            <div
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0f2540] to-transparent lg:hidden"
+              aria-hidden
             />
-            <StoreButton
-              href={GOOGLE_PLAY_URL}
-              icon={<GooglePlayIcon className="size-5" />}
-              subtitle="Get it on"
-              title="Google Play'den İndir"
-            />
+            {screenshots.map(({ src, alt, tilt, zIndex }) => (
+              <div
+                key={src}
+                className={`relative w-[46%] max-w-[13rem] transition-transform duration-500 hover:-translate-y-2 sm:max-w-[14.5rem] ${tilt} ${zIndex}`}
+              >
+                <Image
+                  src={src}
+                  alt={alt}
+                  width={580}
+                  height={1160}
+                  className="h-auto w-full drop-shadow-[0_24px_60px_rgba(0,0,0,0.45)]"
+                  sizes="(max-width: 640px) 46vw, 14.5rem"
+                />
+              </div>
+            ))}
           </div>
         </div>
       </FadeInSection>

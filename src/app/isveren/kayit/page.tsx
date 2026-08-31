@@ -4,17 +4,21 @@ import "react-easy-crop/react-easy-crop.css";
 import { Camera, Loader2, MapPin, Upload, X, ZoomIn } from "lucide-react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Cropper, { type Area, type Point } from "react-easy-crop";
-import { getCroppedImageBlob } from "./crop-image";
+import { getCroppedImageBlob, EMPLOYER_LOGO_ASPECT } from "./crop-image";
 import { findNearestDistrict } from "./find-nearest-location";
+import {
+  getStorageErrorMessage,
+  uploadCorporateLogo,
+} from "./upload-logo";
 import { resolveCityCenter } from "@/lib/data/city-centers";
 import { EMPLOYEE_COUNTS, JOB_CATEGORIES } from "@/lib/data/job-categories";
 import { CITY_NAMES, TURKEY_CITIES } from "@/lib/data/turkey-cities";
 import { firestoreIsoNow } from "@/lib/firebase-schema";
-import { auth, db, storage } from "@/lib/firebase";
+import { getVerifiedPhoneE164 } from "@/lib/auth/verified-phone";
+import { auth, db } from "@/lib/firebase";
 
 const TOTAL_FIELDS = 8;
 
@@ -73,7 +77,7 @@ function ProfilePreviewCard({
       <p className="mb-3 text-center text-xs font-medium tracking-wide text-white/70 uppercase">
         Mobil önizleme
       </p>
-      <div className="relative aspect-[3/4] overflow-hidden rounded-3xl bg-neutral-300 shadow-[0_24px_48px_rgba(0,0,0,0.35)] ring-1 ring-white/10">
+      <div className="relative aspect-[710/473] overflow-hidden rounded-3xl bg-neutral-300 shadow-[0_24px_48px_rgba(0,0,0,0.35)] ring-1 ring-white/10">
         {logoPreview ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -131,8 +135,10 @@ function PhotoCropModal({ imageSrc, onClose, onConfirm }: PhotoCropModalProps) {
     try {
       const blob = await getCroppedImageBlob(imageSrc, croppedAreaPixels);
       await onConfirm(blob);
-    } catch {
+    } catch (err) {
+      console.error("[Photo crop]", err);
       setCropError("Fotoğraf işlenemedi. Lütfen tekrar dene.");
+    } finally {
       setIsProcessing(false);
     }
   }
@@ -147,7 +153,7 @@ function PhotoCropModal({ imageSrc, onClose, onConfirm }: PhotoCropModalProps) {
       <div className="flex w-full max-w-lg flex-col overflow-hidden rounded-3xl bg-[#0f2540] shadow-2xl">
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
           <h2 id="crop-title" className="text-lg font-semibold text-white">
-            Fotoğrafı kırp (3:4)
+            Fotoğrafı kırp
           </h2>
           <button
             type="button"
@@ -165,7 +171,7 @@ function PhotoCropModal({ imageSrc, onClose, onConfirm }: PhotoCropModalProps) {
             image={imageSrc}
             crop={crop}
             zoom={zoom}
-            aspect={3 / 4}
+            aspect={EMPLOYER_LOGO_ASPECT}
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onCropComplete={onCropComplete}
@@ -232,6 +238,7 @@ export default function IsverenKayitPage() {
 
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [verifiedPhoneE164, setVerifiedPhoneE164] = useState<string | null>(null);
 
   const [companyName, setCompanyName] = useState("");
   const [ownerFullName, setOwnerFullName] = useState("");
@@ -260,6 +267,7 @@ export default function IsverenKayitPage() {
         return;
       }
       setAuthUser(user);
+      setVerifiedPhoneE164(getVerifiedPhoneE164());
       setAuthLoading(false);
     });
     return () => unsubscribe();
@@ -327,23 +335,26 @@ export default function IsverenKayitPage() {
       return;
     }
 
+    setCropImageSrc(null);
     setIsUploadingLogo(true);
+    setError(null);
+
+    const previewUrl = URL.createObjectURL(blob);
+    setLogoPreview((prev) => {
+      if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
+      return previewUrl;
+    });
+
     try {
-      const previewUrl = URL.createObjectURL(blob);
+      const downloadUrl = await uploadCorporateLogo(user.uid, blob);
+      setLogoUrl(downloadUrl);
       setLogoPreview((prev) => {
         if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
-        return previewUrl;
+        return downloadUrl;
       });
-
-      const storageRef = ref(storage, `corporate_logos/${user.uid}.jpg`);
-      await uploadBytes(storageRef, blob, { contentType: "image/jpeg" });
-      const downloadUrl = await getDownloadURL(storageRef);
-      setLogoUrl(downloadUrl);
-      setLogoPreview(downloadUrl);
-      setCropImageSrc(null);
-    } catch {
-      setError("Fotoğraf yüklenemedi. Lütfen tekrar dene.");
-      throw new Error("upload failed");
+    } catch (err) {
+      console.error("[Logo upload]", err);
+      setError(getStorageErrorMessage(err));
     } finally {
       setIsUploadingLogo(false);
     }
@@ -397,6 +408,12 @@ export default function IsverenKayitPage() {
       return;
     }
 
+    const phone = verifiedPhoneE164 ?? getVerifiedPhoneE164();
+    if (!phone) {
+      setError("Telefon doğrulaması bulunamadı. Lütfen tekrar giriş yap.");
+      return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -407,7 +424,7 @@ export default function IsverenKayitPage() {
 
       await setDoc(doc(db, "users", uid), {
         id: uid,
-        phoneNumber: user.phoneNumber ?? null,
+        phoneNumber: phone,
         userType: "kurumsal",
         subscriptionPlan: "free",
         isActive: true,
@@ -435,13 +452,10 @@ export default function IsverenKayitPage() {
         createdAt: nowIso,
       });
 
-      const phone = user.phoneNumber;
-      if (phone) {
-        await setDoc(doc(db, "phoneLookup", phone), {
-          uid,
-          createdAt: serverTimestamp(),
-        });
-      }
+      await setDoc(doc(db, "phoneLookup", phone), {
+        uid,
+        createdAt: serverTimestamp(),
+      });
 
       router.push("/isveren/panel");
     } catch {
@@ -514,7 +528,7 @@ export default function IsverenKayitPage() {
                     İşletme Fotoğrafı
                   </h2>
                   <p className="mt-1 text-sm text-[#1a1a1a]/60">
-                    3:4 dikey oran — mobil kartta tam ekran görünür.
+                    Önerilen: yatay fotoğraf — mobil kartta böyle görünür.
                   </p>
 
                   <input
