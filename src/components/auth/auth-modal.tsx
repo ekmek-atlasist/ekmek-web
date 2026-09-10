@@ -61,7 +61,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
           onClick={closeAuthModal}
         >
           <div
-            className="relative w-full max-w-[400px] overflow-visible rounded-2xl bg-white shadow-xl"
+            className="relative w-full max-w-[420px] overflow-visible rounded-2xl bg-white shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
             <button

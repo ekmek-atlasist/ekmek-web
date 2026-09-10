@@ -409,10 +409,7 @@ export default function IsverenKayitPage() {
     }
 
     const phone = verifiedPhoneE164 ?? getVerifiedPhoneE164();
-    if (!phone) {
-      setError("Telefon doğrulaması bulunamadı. Lütfen tekrar giriş yap.");
-      return;
-    }
+    const email = user.email?.trim() || null;
 
     setIsSaving(true);
 
@@ -424,7 +421,8 @@ export default function IsverenKayitPage() {
 
       await setDoc(doc(db, "users", uid), {
         id: uid,
-        phoneNumber: phone,
+        phoneNumber: phone ?? null,
+        email,
         userType: "kurumsal",
         subscriptionPlan: "free",
         isActive: true,
@@ -452,10 +450,12 @@ export default function IsverenKayitPage() {
         createdAt: nowIso,
       });
 
-      await setDoc(doc(db, "phoneLookup", phone), {
-        uid,
-        createdAt: serverTimestamp(),
-      });
+      if (phone) {
+        await setDoc(doc(db, "phoneLookup", phone), {
+          uid,
+          createdAt: serverTimestamp(),
+        });
+      }
 
       router.push("/isveren/panel");
     } catch {

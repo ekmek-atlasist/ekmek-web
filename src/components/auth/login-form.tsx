@@ -3,11 +3,18 @@
 import { FirebaseError } from "firebase/app";
 import { signInWithCustomToken, signOut } from "firebase/auth";
 import { httpsCallable } from "firebase/functions";
-import { doc, getDoc } from "firebase/firestore";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState, type ClipboardEvent, type KeyboardEvent } from "react";
-import { Check, Loader2, Smartphone, UserRoundX } from "lucide-react";
+import { ArrowLeft, Check, Loader2, Smartphone, UserRoundX } from "lucide-react";
+import {
+  AuthMethodPicker,
+  SocialContinueButton,
+} from "@/components/auth/social-auth-buttons";
+import {
+  AuthConsentFields,
+  isAuthConsentComplete,
+} from "@/components/auth/auth-consent-fields";
 import {
   digitsOnly,
   formatPhoneForDisplay,
@@ -17,16 +24,19 @@ import {
   isValidPhoneDigits,
 } from "@/lib/auth/login-helpers";
 import {
+  getSocialAuthErrorMessage,
+  isHandledSocialAuthError,
+  resolveEmployerAuthRoute,
+  signInWithApplePopup,
+  signInWithGooglePopup,
+} from "@/lib/auth/social-auth";
+import {
   clearVerifiedPhoneE164,
   storeVerifiedPhoneE164,
 } from "@/lib/auth/verified-phone";
-import { auth, db, functions } from "@/lib/firebase";
+import { auth, functions } from "@/lib/firebase";
 
-type Stage = "phone" | "otp" | "redirecting" | "bireysel";
-
-type UserDoc = {
-  userType?: string;
-};
+type Stage = "choose" | "phone" | "social" | "otp" | "redirecting" | "bireysel";
 
 type OtpMode = "login" | "register";
 
@@ -224,22 +234,12 @@ function AuthHero({
           ? "İşveren Kaydı"
           : "İşveren Girişi";
 
-  const subtitle =
-    stage === "bireysel"
-      ? "Bu alan yalnızca işveren hesapları içindir"
-      : stage === "otp"
-        ? "SMS ile gelen kodu gir"
-        : mode === "register"
-          ? "Telefon numaranı doğrula"
-          : "Telefon numaranla giriş yap";
-
   return (
     <div className="relative overflow-visible rounded-t-2xl bg-[#0f2540] px-5 pt-5 pb-8 sm:px-6 sm:pt-6 sm:pb-10">
       <div className="relative z-[1] max-w-[62%]">
         <h2 className="text-xl font-bold tracking-tight text-white sm:text-[1.35rem]">
           {title}
         </h2>
-        <p className="mt-1 text-sm leading-relaxed text-white/65">{subtitle}</p>
       </div>
 
       <div className="pointer-events-none absolute -right-1 -bottom-7 z-[2] size-[7.5rem] sm:-right-2 sm:-bottom-8 sm:size-[8.75rem]">
@@ -256,9 +256,34 @@ function AuthHero({
   );
 }
 
+function BackButton({ onClick, disabled }: { onClick: () => void; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="mb-4 flex items-center gap-1.5 text-sm font-medium text-[#036AAF] transition-colors hover:text-[#025a94] disabled:opacity-50"
+    >
+      <ArrowLeft className="size-4" aria-hidden />
+      Geri
+    </button>
+  );
+}
+
+function isSilentAuthError(err: unknown): boolean {
+  return (
+    err instanceof FirebaseError &&
+    (err.code === "auth/popup-closed-by-user" ||
+      err.code === "auth/cancelled-popup-request")
+  );
+}
+
 function logAuthError(scope: string, err: unknown) {
+  if (isSilentAuthError(err)) return;
+  if (isHandledSocialAuthError(err)) return;
+
   if (err instanceof FirebaseError) {
-    console.error(`[${scope}]`, err.code, err.message, err);
+    console.error(`[${scope}]`, err.code, err.message);
     return;
   }
   console.error(`[${scope}]`, err);
@@ -271,7 +296,10 @@ export function LoginForm({
   onComplete,
 }: LoginFormProps) {
   const router = useRouter();
-  const [stage, setStage] = useState<Stage>("phone");
+  const [stage, setStage] = useState<Stage>("choose");
+  const [socialProvider, setSocialProvider] = useState<"google" | "apple" | null>(
+    null,
+  );
   const [phoneDigits, setPhoneDigits] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -279,13 +307,82 @@ export function LoginForm({
   const [isVerifying, setIsVerifying] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [otpSessionActive, setOtpSessionActive] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [socialLoading, setSocialLoading] = useState(false);
+  const [accountLabel, setAccountLabel] = useState("");
 
+  const requiresConsent = mode === "register";
   const phoneValid = isValidPhoneDigits(phoneDigits);
+  const consentComplete = isAuthConsentComplete(acceptedTerms, acceptedPrivacy);
+  const canProceed = !requiresConsent || consentComplete;
   const otpValid = isValidOtpCode(otpCode);
   const phoneE164 = phoneValid ? `+90${phoneDigits}` : "";
 
+  const showHero =
+    stage === "choose" ||
+    stage === "phone" ||
+    stage === "social" ||
+    stage === "otp" ||
+    stage === "bireysel";
+
+  const showBodyPadding =
+    stage === "choose" ||
+    stage === "phone" ||
+    stage === "social" ||
+    stage === "otp";
+
+  function resetToChoose() {
+    setError(null);
+    setSocialProvider(null);
+    setStage("choose");
+  }
+
+  function handleSelectMethod(method: "google" | "apple" | "phone") {
+    setError(null);
+    if (method === "phone") {
+      setStage("phone");
+      return;
+    }
+    setSocialProvider(method);
+    if (requiresConsent) {
+      setStage("social");
+      return;
+    }
+    void handleSocialSignIn(method);
+  }
+
+  async function handlePostAuthRouting(resolvedUid: string) {
+    const route = await resolveEmployerAuthRoute(resolvedUid);
+
+    if (route === "kayit") {
+      onComplete?.();
+      router.push("/isveren/kayit");
+      return;
+    }
+
+    if (route === "panel") {
+      onComplete?.();
+      router.push("/isveren/panel");
+      return;
+    }
+
+    if (route === "bireysel") {
+      setStage("bireysel");
+      return;
+    }
+
+    setError("Bir hata oluştu, tekrar dene");
+  }
+
   async function handleSendCode() {
     setError(null);
+
+    if (requiresConsent && !consentComplete) {
+      setError("Devam etmek için zorunlu sözleşmeleri kabul etmelisin.");
+      return;
+    }
 
     if (!phoneValid) {
       setError("Geçerli bir cep telefonu numarası gir (5XX XXX XX XX).");
@@ -344,32 +441,12 @@ export function LoginForm({
       setIsVerifying(false);
       setStage("redirecting");
       setError(null);
+      setAccountLabel(formatPhoneForDisplay(phoneDigits));
 
       const resolvedUid = auth.currentUser?.uid ?? uid;
 
       try {
-        const userDoc = await getDoc(doc(db, "users", resolvedUid));
-
-        if (!userDoc.exists()) {
-          onComplete?.();
-          router.push("/isveren/kayit");
-          return;
-        }
-
-        const data = userDoc.data() as UserDoc;
-
-        if (data.userType === "kurumsal") {
-          onComplete?.();
-          router.push("/isveren/panel");
-          return;
-        }
-
-        if (data.userType === "bireysel") {
-          setStage("bireysel");
-          return;
-        }
-
-        setError("Bir hata oluştu, tekrar dene");
+        await handlePostAuthRouting(resolvedUid);
       } catch (err) {
         console.error("[Phone OTP post-auth Firestore]", err);
         setError("Bir hata oluştu, tekrar dene");
@@ -391,7 +468,8 @@ export function LoginForm({
       setPhoneDigits("");
       setOtpCode("");
       setOtpSessionActive(false);
-      setStage("phone");
+      setSocialProvider(null);
+      setStage("choose");
     } catch {
       setError("Çıkış yapılamadı. Lütfen tekrar dene.");
     } finally {
@@ -406,132 +484,194 @@ export function LoginForm({
     setStage("phone");
   }
 
+  async function handleSocialSignIn(provider?: "google" | "apple") {
+    const activeProvider = provider ?? socialProvider;
+    if (!activeProvider) return;
+
+    setError(null);
+
+    if (requiresConsent && !consentComplete) {
+      setError("Devam etmek için zorunlu sözleşmeleri kabul etmelisin.");
+      return;
+    }
+
+    setSocialProvider(activeProvider);
+    setSocialLoading(true);
+
+    try {
+      clearVerifiedPhoneE164();
+
+      const result =
+        activeProvider === "google"
+          ? await signInWithGooglePopup()
+          : await signInWithApplePopup();
+
+      setAccountLabel(result.user.email ?? "Bu hesap");
+      setStage("redirecting");
+
+      await handlePostAuthRouting(result.user.uid);
+    } catch (err) {
+      logAuthError(`Social ${activeProvider}`, err);
+      const message = getSocialAuthErrorMessage(err, activeProvider);
+      if (message) {
+        setError(message);
+      }
+      setStage(requiresConsent ? "social" : "choose");
+    } finally {
+      setSocialLoading(false);
+    }
+  }
+
   return (
     <div className={className}>
-      {stage === "phone" || stage === "otp" || stage === "bireysel" ? (
-        <AuthHero mode={mode} stage={stage} />
-      ) : null}
+      {showHero ? <AuthHero mode={mode} stage={stage} /> : null}
 
-      <div
-        className={
-          stage === "phone" || stage === "otp"
-            ? "px-5 pb-5 pt-4 sm:px-6 sm:pb-6"
-            : undefined
-        }
-      >
-      {stage === "phone" ? (
-        <div>
-          <label
-            htmlFor={`phone-${formIdPrefix}`}
-            className="mb-2.5 block text-sm font-medium text-[#1a1a1a]/70"
-          >
-            Cep telefonu
-          </label>
+      <div className={showBodyPadding ? "px-5 pb-5 pt-4 sm:px-6 sm:pb-6" : undefined}>
+        {stage === "choose" ? (
+          <>
+            <AuthMethodPicker
+              onSelect={handleSelectMethod}
+              disabled={socialLoading}
+            />
+            {error ? (
+              <p className="mt-3 text-sm text-red-600" role="alert">
+                {error}
+              </p>
+            ) : null}
+          </>
+        ) : null}
 
-          <PhoneNumberField
-            id={`phone-${formIdPrefix}`}
-            digits={phoneDigits}
-            valid={phoneValid}
-            disabled={isSending}
-            onChange={(next) => {
-              setPhoneDigits(next);
-              if (error) setError(null);
-            }}
-          />
+        {stage === "social" && socialProvider && requiresConsent ? (
+          <div>
+            <BackButton onClick={resetToChoose} disabled={socialLoading} />
 
-          {error ? (
-            <p className="mt-3 text-sm text-red-600" role="alert">
-              {error}
-            </p>
-          ) : null}
+            <AuthConsentFields
+              idPrefix={formIdPrefix}
+              acceptedTerms={acceptedTerms}
+              acceptedPrivacy={acceptedPrivacy}
+              marketingConsent={marketingConsent}
+              onAcceptedTermsChange={setAcceptedTerms}
+              onAcceptedPrivacyChange={setAcceptedPrivacy}
+              onMarketingConsentChange={setMarketingConsent}
+              disabled={socialLoading}
+            />
 
-          <button
-            type="button"
-            onClick={() => void handleSendCode()}
-            disabled={isSending || !phoneValid}
-            className="mt-5 w-full rounded-xl bg-[#036AAF] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#025a94] disabled:opacity-45"
-          >
-            {isSending ? "Gönderiliyor..." : "Kod Gönder"}
-          </button>
-        </div>
-      ) : null}
+            {error ? (
+              <p className="mt-3 text-sm text-red-600" role="alert">
+                {error}
+              </p>
+            ) : null}
 
-      {stage === "otp" ? (
-        <div>
-          <p className="text-sm text-[#1a1a1a]/65">
-            <span className="font-semibold text-[#0f2540]">
-              {formatPhoneForDisplay(phoneDigits)}
-            </span>
-            {" "}numarasına kod gönderildi.
-          </p>
+            <div className="mt-5">
+              <SocialContinueButton
+                provider={socialProvider}
+                onClick={() => void handleSocialSignIn()}
+                disabled={!canProceed}
+                loading={socialLoading}
+              />
+            </div>
+          </div>
+        ) : null}
 
-          <div className="relative mt-4">
-            <OtpBoxes
-              idPrefix={`otp-${formIdPrefix}`}
-              value={otpCode}
+        {stage === "phone" ? (
+          <div>
+            <BackButton onClick={resetToChoose} disabled={isSending} />
+
+            <PhoneNumberField
+              id={`phone-${formIdPrefix}`}
+              digits={phoneDigits}
+              valid={phoneValid}
+              disabled={isSending}
               onChange={(next) => {
-                setOtpCode(next);
+                setPhoneDigits(next);
                 if (error) setError(null);
               }}
-              disabled={isVerifying}
             />
-            {otpValid ? (
-              <div className="mt-2 flex justify-center">
-                <Check
-                  className="size-5 text-emerald-500"
-                  strokeWidth={2.5}
-                  aria-hidden
-                />
-              </div>
+
+            {requiresConsent ? (
+              <AuthConsentFields
+                idPrefix={formIdPrefix}
+                acceptedTerms={acceptedTerms}
+                acceptedPrivacy={acceptedPrivacy}
+                marketingConsent={marketingConsent}
+                onAcceptedTermsChange={setAcceptedTerms}
+                onAcceptedPrivacyChange={setAcceptedPrivacy}
+                onMarketingConsentChange={setMarketingConsent}
+                disabled={isSending}
+              />
             ) : null}
+
+            {error ? (
+              <p className="mt-3 text-sm text-red-600" role="alert">
+                {error}
+              </p>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => void handleSendCode()}
+              disabled={isSending || !phoneValid || !canProceed}
+              className="mt-5 w-full rounded-xl bg-[#036AAF] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#025a94] disabled:opacity-45"
+            >
+              {isSending ? "Gönderiliyor..." : "Devam Et"}
+            </button>
           </div>
+        ) : null}
 
-          {error ? (
-            <p className="mt-3 text-sm text-red-600" role="alert">
-              {error}
-            </p>
-          ) : null}
+        {stage === "otp" ? (
+          <div>
+            <BackButton onClick={handleChangeNumber} disabled={isVerifying} />
 
-          <button
-            type="button"
-            onClick={() => void handleVerifyCode()}
-            disabled={isVerifying || !otpValid}
-            className="mt-5 w-full rounded-xl bg-[#036AAF] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#025a94] disabled:opacity-45"
-          >
-            {isVerifying ? "Doğrulanıyor..." : "Doğrula"}
-          </button>
+            <div className="relative">
+              <OtpBoxes
+                idPrefix={`otp-${formIdPrefix}`}
+                value={otpCode}
+                onChange={(next) => {
+                  setOtpCode(next);
+                  if (error) setError(null);
+                }}
+                disabled={isVerifying}
+              />
+              {otpValid ? (
+                <div className="mt-2 flex justify-center">
+                  <Check
+                    className="size-5 text-emerald-500"
+                    strokeWidth={2.5}
+                    aria-hidden
+                  />
+                </div>
+              ) : null}
+            </div>
 
-          <button
-            type="button"
-            onClick={handleChangeNumber}
-            disabled={isVerifying}
-            className="mt-3 w-full text-sm text-[#036AAF] transition-colors hover:text-[#025a94] disabled:opacity-60"
-          >
-            Numarayı değiştir
-          </button>
-        </div>
-      ) : null}
+            {error ? (
+              <p className="mt-3 text-sm text-red-600" role="alert">
+                {error}
+              </p>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => void handleVerifyCode()}
+              disabled={isVerifying || !otpValid}
+              className="mt-5 w-full rounded-xl bg-[#036AAF] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#025a94] disabled:opacity-45"
+            >
+              {isVerifying ? "Doğrulanıyor..." : "Devam Et"}
+            </button>
+          </div>
+        ) : null}
       </div>
 
       {stage === "redirecting" ? (
-        <div className="py-8 text-center">
+        <div className="py-10 text-center">
           {error ? (
             <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
               {error}
             </p>
           ) : (
-            <>
-              <Loader2
-                className="mx-auto size-8 animate-spin text-[#036AAF]"
-                aria-hidden
-              />
-              <p className="mt-4 text-xl font-bold text-[#1a1a1a]">
-                Yönlendiriliyor...
-              </p>
-              <p className="mt-2 text-sm text-[#1a1a1a]/70">
-                Hesabın kontrol ediliyor.
-              </p>
-            </>
+            <Loader2
+              className="mx-auto size-8 animate-spin text-[#036AAF]"
+              aria-hidden
+            />
           )}
         </div>
       ) : null}
@@ -549,9 +689,10 @@ export function LoginForm({
                 </h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-[#1a1a1a]/70">
                   <span className="font-medium text-[#0f2540]">
-                    {formatPhoneForDisplay(phoneDigits)}
+                    {accountLabel}
                   </span>
-                  {" "}numarası bireysel (iş arayan) hesap olarak kayıtlı.
+                  {" "}
+                  bireysel (iş arayan) hesap olarak kayıtlı.
                 </p>
               </div>
             </div>
@@ -585,10 +726,6 @@ export function LoginForm({
           >
             {isSigningOut ? "Çıkış yapılıyor..." : "Çıkış Yap"}
           </button>
-
-          <p className="mt-3 text-center text-xs leading-relaxed text-[#1a1a1a]/45">
-            İşveren hesabın varsa farklı bir numara ile tekrar giriş yap.
-          </p>
         </div>
       ) : null}
     </div>
