@@ -39,16 +39,36 @@ export type AuthMethod = "google" | "apple" | "phone";
 type AuthMethodPickerProps = {
   onSelect: (method: AuthMethod) => void;
   disabled?: boolean;
+  selectedMethod?: AuthMethod | null;
 };
 
-export function AuthMethodPicker({ onSelect, disabled }: AuthMethodPickerProps) {
+function methodButtonClass(selected: boolean, variant: "google" | "apple" | "phone") {
+  const selectedRing = selected ? "ring-2 ring-[#036AAF] ring-offset-2" : "";
+
+  if (variant === "google") {
+    return `flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-200 bg-white px-4 py-3.5 text-sm font-semibold text-[#1a1a1a] shadow-sm transition-all hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-45 ${selectedRing}`;
+  }
+
+  if (variant === "apple") {
+    return `flex w-full items-center justify-center gap-3 rounded-xl bg-black px-4 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-900 disabled:cursor-not-allowed disabled:opacity-45 ${selected ? "ring-2 ring-[#036AAF] ring-offset-2" : ""}`;
+  }
+
+  return `flex w-full items-center justify-center gap-3 rounded-xl border border-[#036AAF]/20 bg-[#036AAF]/[0.06] px-4 py-3.5 text-sm font-semibold text-[#036AAF] transition-colors hover:bg-[#036AAF]/10 disabled:cursor-not-allowed disabled:opacity-45 ${selectedRing}`;
+}
+
+export function AuthMethodPicker({
+  onSelect,
+  disabled,
+  selectedMethod = null,
+}: AuthMethodPickerProps) {
   return (
     <div className="space-y-3">
       <button
         type="button"
         onClick={() => onSelect("google")}
         disabled={disabled}
-        className="flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-200 bg-white px-4 py-3.5 text-sm font-semibold text-[#1a1a1a] shadow-sm transition-all hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-45"
+        aria-pressed={selectedMethod === "google"}
+        className={methodButtonClass(selectedMethod === "google", "google")}
       >
         <GoogleLogo className="size-5" />
         Google
@@ -58,7 +78,8 @@ export function AuthMethodPicker({ onSelect, disabled }: AuthMethodPickerProps) 
         type="button"
         onClick={() => onSelect("apple")}
         disabled={disabled}
-        className="flex w-full items-center justify-center gap-3 rounded-xl bg-black px-4 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-900 disabled:cursor-not-allowed disabled:opacity-45"
+        aria-pressed={selectedMethod === "apple"}
+        className={methodButtonClass(selectedMethod === "apple", "apple")}
       >
         <AppleLogo className="size-5" />
         Apple
@@ -68,7 +89,8 @@ export function AuthMethodPicker({ onSelect, disabled }: AuthMethodPickerProps) 
         type="button"
         onClick={() => onSelect("phone")}
         disabled={disabled}
-        className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#036AAF]/20 bg-[#036AAF]/[0.06] px-4 py-3.5 text-sm font-semibold text-[#036AAF] transition-colors hover:bg-[#036AAF]/10 disabled:cursor-not-allowed disabled:opacity-45"
+        aria-pressed={selectedMethod === "phone"}
+        className={methodButtonClass(selectedMethod === "phone", "phone")}
       >
         <Phone className="size-5" strokeWidth={2} aria-hidden />
         Telefon

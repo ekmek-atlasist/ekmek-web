@@ -17,6 +17,11 @@ import { resolveCityCenter } from "@/lib/data/city-centers";
 import { EMPLOYEE_COUNTS, JOB_CATEGORIES } from "@/lib/data/job-categories";
 import { CITY_NAMES, TURKEY_CITIES } from "@/lib/data/turkey-cities";
 import { firestoreIsoNow } from "@/lib/firebase-schema";
+import {
+  clearPendingUserConsents,
+  getPendingUserConsents,
+} from "@/lib/auth/pending-consents";
+import { buildUserConsents } from "@/lib/auth/user-consents";
 import { getVerifiedPhoneE164 } from "@/lib/auth/verified-phone";
 import { auth, db } from "@/lib/firebase";
 
@@ -410,6 +415,12 @@ export default function IsverenKayitPage() {
 
     const phone = verifiedPhoneE164 ?? getVerifiedPhoneE164();
     const email = user.email?.trim() || null;
+    const pendingConsents = getPendingUserConsents();
+
+    if (!pendingConsents?.termsAccepted || !pendingConsents.privacyNoticeAcknowledged) {
+      setError("Kayıt onayları bulunamadı. Lütfen tekrar kayıt olmayı dene.");
+      return;
+    }
 
     setIsSaving(true);
 
@@ -428,6 +439,7 @@ export default function IsverenKayitPage() {
         isActive: true,
         isDeleted: false,
         phoneVisibleToMatches: false,
+        consents: buildUserConsents(pendingConsents),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         lastLogin: nowIso,
@@ -457,6 +469,7 @@ export default function IsverenKayitPage() {
         });
       }
 
+      clearPendingUserConsents();
       router.push("/isveren/panel");
     } catch {
       setError("Kayıt sırasında bir hata oluştu. Lütfen tekrar dene.");

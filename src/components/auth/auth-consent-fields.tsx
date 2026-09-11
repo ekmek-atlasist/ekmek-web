@@ -1,5 +1,7 @@
-import Link from "next/link";
-import type { ReactNode } from "react";
+"use client";
+
+import { useState, type ReactNode } from "react";
+import { AuthLegalSheet, type AuthLegalSheetType } from "./auth-legal-sheet";
 
 type AuthConsentFieldsProps = {
   idPrefix: string;
@@ -47,6 +49,28 @@ function ConsentCheckbox({
   );
 }
 
+function LegalLinkButton({
+  children,
+  onClick,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onClick();
+      }}
+      className="font-semibold text-[#036AAF] underline-offset-2 hover:underline"
+    >
+      {children}
+    </button>
+  );
+}
+
 export function AuthConsentFields({
   idPrefix,
   acceptedTerms,
@@ -57,52 +81,52 @@ export function AuthConsentFields({
   onMarketingConsentChange,
   disabled,
 }: AuthConsentFieldsProps) {
+  const [legalSheet, setLegalSheet] = useState<AuthLegalSheetType | null>(null);
+
   return (
-    <div className="mt-5 space-y-2.5">
-      <ConsentCheckbox
-        id={`${idPrefix}-terms`}
-        checked={acceptedTerms}
-        onChange={onAcceptedTermsChange}
-        disabled={disabled}
-      >
-        <Link
-          href="/kullanim-kosullari"
-          target="_blank"
-          className="font-semibold text-[#036AAF] underline-offset-2 hover:underline"
-          onClick={(event) => event.stopPropagation()}
+    <>
+      <div className="mt-5 space-y-2.5">
+        <ConsentCheckbox
+          id={`${idPrefix}-terms`}
+          checked={acceptedTerms}
+          onChange={onAcceptedTermsChange}
+          disabled={disabled}
         >
-          Kullanım Şartları ve Üyelik Sözleşmesi
-        </Link>
-        &apos;ni okudum, kabul ediyorum.
-      </ConsentCheckbox>
+          <LegalLinkButton onClick={() => setLegalSheet("terms")}>
+            Kullanım Şartları ve Üyelik Sözleşmesi
+          </LegalLinkButton>
+          &apos;ni okudum, kabul ediyorum.
+        </ConsentCheckbox>
 
-      <ConsentCheckbox
-        id={`${idPrefix}-privacy`}
-        checked={acceptedPrivacy}
-        onChange={onAcceptedPrivacyChange}
-        disabled={disabled}
-      >
-        <Link
-          href="/gizlilik"
-          target="_blank"
-          className="font-semibold text-[#036AAF] underline-offset-2 hover:underline"
-          onClick={(event) => event.stopPropagation()}
+        <ConsentCheckbox
+          id={`${idPrefix}-privacy`}
+          checked={acceptedPrivacy}
+          onChange={onAcceptedPrivacyChange}
+          disabled={disabled}
         >
-          Aydınlatma Metni
-        </Link>
-        &apos;ni okudum, anladım.
-      </ConsentCheckbox>
+          <LegalLinkButton onClick={() => setLegalSheet("privacy")}>
+            Aydınlatma Metni
+          </LegalLinkButton>
+          &apos;ni okudum, anladım.
+        </ConsentCheckbox>
 
-      <ConsentCheckbox
-        id={`${idPrefix}-marketing`}
-        checked={marketingConsent}
-        onChange={onMarketingConsentChange}
-        disabled={disabled}
-      >
-        Ticari elektronik ileti almak istiyorum.{" "}
-        <span className="text-[#1a1a1a]/45">(isteğe bağlı)</span>
-      </ConsentCheckbox>
-    </div>
+        <ConsentCheckbox
+          id={`${idPrefix}-marketing`}
+          checked={marketingConsent}
+          onChange={onMarketingConsentChange}
+          disabled={disabled}
+        >
+          Ticari elektronik ileti almak istiyorum.{" "}
+          <span className="text-[#1a1a1a]/45">(isteğe bağlı)</span>
+        </ConsentCheckbox>
+      </div>
+
+      <AuthLegalSheet
+        open={legalSheet !== null}
+        type={legalSheet}
+        onClose={() => setLegalSheet(null)}
+      />
+    </>
   );
 }
 

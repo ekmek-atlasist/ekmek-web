@@ -10,6 +10,7 @@ import { ArrowLeft, Check, Loader2, Smartphone, UserRoundX } from "lucide-react"
 import {
   AuthMethodPicker,
   SocialContinueButton,
+  type AuthMethod,
 } from "@/components/auth/social-auth-buttons";
 import {
   AuthConsentFields,
@@ -31,12 +32,16 @@ import {
   signInWithGooglePopup,
 } from "@/lib/auth/social-auth";
 import {
+  clearPendingUserConsents,
+  storePendingUserConsents,
+} from "@/lib/auth/pending-consents";
+import {
   clearVerifiedPhoneE164,
   storeVerifiedPhoneE164,
 } from "@/lib/auth/verified-phone";
 import { auth, functions } from "@/lib/firebase";
 
-type Stage = "choose" | "phone" | "social" | "otp" | "redirecting" | "bireysel";
+type Stage = "choose" | "phone" | "otp" | "redirecting" | "bireysel";
 
 type OtpMode = "login" | "register";
 
@@ -297,6 +302,7 @@ export function LoginForm({
 }: LoginFormProps) {
   const router = useRouter();
   const [stage, setStage] = useState<Stage>("choose");
+  const [selectedMethod, setSelectedMethod] = useState<AuthMethod | null>(null);
   const [socialProvider, setSocialProvider] = useState<"google" | "apple" | null>(
     null,
   );
@@ -323,34 +329,48 @@ export function LoginForm({
   const showHero =
     stage === "choose" ||
     stage === "phone" ||
-    stage === "social" ||
     stage === "otp" ||
     stage === "bireysel";
 
   const showBodyPadding =
     stage === "choose" ||
     stage === "phone" ||
-    stage === "social" ||
     stage === "otp";
+
+  const registerExpanded =
+    requiresConsent && stage === "choose" && selectedMethod !== null;
 
   function resetToChoose() {
     setError(null);
     setSocialProvider(null);
+    setSelectedMethod(null);
     setStage("choose");
   }
 
-  function handleSelectMethod(method: "google" | "apple" | "phone") {
+  function clearSelectedMethod() {
     setError(null);
-    if (method === "phone") {
-      setStage("phone");
+    setSelectedMethod(null);
+    setSocialProvider(null);
+  }
+
+  function handleSelectMethod(method: AuthMethod) {
+    setError(null);
+
+    if (!requiresConsent) {
+      if (method === "phone") {
+        setStage("phone");
+        return;
+      }
+      void handleSocialSignIn(method);
       return;
     }
-    setSocialProvider(method);
-    if (requiresConsent) {
-      setStage("social");
-      return;
+
+    setSelectedMethod(method);
+    if (method === "google" || method === "apple") {
+      setSocialProvider(method);
+    } else {
+      setSocialProvider(null);
     }
-    void handleSocialSignIn(method);
   }
 
   async function handlePostAuthRouting(resolvedUid: string) {
@@ -389,6 +409,14 @@ export function LoginForm({
       return;
     }
 
+    if (requiresConsent) {
+      storePendingUserConsents({
+        termsAccepted: acceptedTerms,
+        privacyNoticeAcknowledged: acceptedPrivacy,
+        marketingConsent,
+      });
+    }
+
     setIsSending(true);
 
     try {
@@ -420,7 +448,12 @@ export function LoginForm({
 
     if (!otpSessionActive || !phoneE164) {
       setError("Doğrulama oturumu bulunamadı. Lütfen tekrar kod iste.");
-      setStage("phone");
+      if (requiresConsent) {
+        setStage("choose");
+        setSelectedMethod("phone");
+      } else {
+        setStage("phone");
+      }
       return;
     }
 
@@ -465,10 +498,12 @@ export function LoginForm({
     try {
       await signOut(auth);
       clearVerifiedPhoneE164();
+      clearPendingUserConsents();
       setPhoneDigits("");
       setOtpCode("");
       setOtpSessionActive(false);
       setSocialProvider(null);
+      setSelectedMethod(null);
       setStage("choose");
     } catch {
       setError("Çıkış yapılamadı. Lütfen tekrar dene.");
@@ -481,6 +516,11 @@ export function LoginForm({
     setError(null);
     setOtpCode("");
     setOtpSessionActive(false);
+    if (requiresConsent) {
+      setStage("choose");
+      setSelectedMethod("phone");
+      return;
+    }
     setStage("phone");
   }
 
@@ -498,8 +538,19 @@ export function LoginForm({
     setSocialProvider(activeProvider);
     setSocialLoading(true);
 
+    if (requiresConsent) {
+      storePendingUserConsents({
+        termsAccepted: acceptedTerms,
+        privacyNoticeAcknowledged: acceptedPrivacy,
+        marketingConsent,
+      });
+    }
+
     try {
       clearVerifiedPhoneE164();
+      if (!requiresConsent) {
+        clearPendingUserConsents();
+      }
 
       const result =
         activeProvider === "google"
@@ -516,7 +567,13 @@ export function LoginForm({
       if (message) {
         setError(message);
       }
-      setStage(requiresConsent ? "social" : "choose");
+      if (requiresConsent) {
+        setStage("choose");
+        setSelectedMethod(activeProvider);
+        setSocialProvider(activeProvider);
+      } else {
+        setStage("choose");
+      }
     } finally {
       setSocialLoading(false);
     }
@@ -529,11 +586,72 @@ export function LoginForm({
       <div className={showBodyPadding ? "px-5 pb-5 pt-4 sm:px-6 sm:pb-6" : undefined}>
         {stage === "choose" ? (
           <>
+            {registerExpanded ? (
+              <BackButton
+                onClick={clearSelectedMethod}
+                disabled={socialLoading || isSending}
+              />
+            ) : null}
+
             <AuthMethodPicker
               onSelect={handleSelectMethod}
-              disabled={socialLoading}
+              disabled={socialLoading || isSending}
+              selectedMethod={requiresConsent ? selectedMethod : null}
             />
-            {error ? (
+
+            {registerExpanded ? (
+              <div className="mt-1">
+                {selectedMethod === "phone" ? (
+                  <PhoneNumberField
+                    id={`phone-${formIdPrefix}`}
+                    digits={phoneDigits}
+                    valid={phoneValid}
+                    disabled={isSending}
+                    onChange={(next) => {
+                      setPhoneDigits(next);
+                      if (error) setError(null);
+                    }}
+                  />
+                ) : null}
+
+                <AuthConsentFields
+                  idPrefix={formIdPrefix}
+                  acceptedTerms={acceptedTerms}
+                  acceptedPrivacy={acceptedPrivacy}
+                  marketingConsent={marketingConsent}
+                  onAcceptedTermsChange={setAcceptedTerms}
+                  onAcceptedPrivacyChange={setAcceptedPrivacy}
+                  onMarketingConsentChange={setMarketingConsent}
+                  disabled={socialLoading || isSending}
+                />
+
+                {error ? (
+                  <p className="mt-3 text-sm text-red-600" role="alert">
+                    {error}
+                  </p>
+                ) : null}
+
+                <div className="mt-5">
+                  {selectedMethod === "phone" ? (
+                    <button
+                      type="button"
+                      onClick={() => void handleSendCode()}
+                      disabled={isSending || !phoneValid || !canProceed}
+                      className="w-full rounded-xl bg-[#036AAF] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#025a94] disabled:opacity-45"
+                    >
+                      {isSending ? "Gönderiliyor..." : "Devam Et"}
+                    </button>
+                  ) : socialProvider ? (
+                    <SocialContinueButton
+                      provider={socialProvider}
+                      onClick={() => void handleSocialSignIn()}
+                      disabled={!canProceed}
+                      loading={socialLoading}
+                    />
+                  ) : null}
+                </div>
+              </div>
+            ) : error ? (
               <p className="mt-3 text-sm text-red-600" role="alert">
                 {error}
               </p>
@@ -541,39 +659,7 @@ export function LoginForm({
           </>
         ) : null}
 
-        {stage === "social" && socialProvider && requiresConsent ? (
-          <div>
-            <BackButton onClick={resetToChoose} disabled={socialLoading} />
-
-            <AuthConsentFields
-              idPrefix={formIdPrefix}
-              acceptedTerms={acceptedTerms}
-              acceptedPrivacy={acceptedPrivacy}
-              marketingConsent={marketingConsent}
-              onAcceptedTermsChange={setAcceptedTerms}
-              onAcceptedPrivacyChange={setAcceptedPrivacy}
-              onMarketingConsentChange={setMarketingConsent}
-              disabled={socialLoading}
-            />
-
-            {error ? (
-              <p className="mt-3 text-sm text-red-600" role="alert">
-                {error}
-              </p>
-            ) : null}
-
-            <div className="mt-5">
-              <SocialContinueButton
-                provider={socialProvider}
-                onClick={() => void handleSocialSignIn()}
-                disabled={!canProceed}
-                loading={socialLoading}
-              />
-            </div>
-          </div>
-        ) : null}
-
-        {stage === "phone" ? (
+        {stage === "phone" && !requiresConsent ? (
           <div>
             <BackButton onClick={resetToChoose} disabled={isSending} />
 
@@ -588,19 +674,6 @@ export function LoginForm({
               }}
             />
 
-            {requiresConsent ? (
-              <AuthConsentFields
-                idPrefix={formIdPrefix}
-                acceptedTerms={acceptedTerms}
-                acceptedPrivacy={acceptedPrivacy}
-                marketingConsent={marketingConsent}
-                onAcceptedTermsChange={setAcceptedTerms}
-                onAcceptedPrivacyChange={setAcceptedPrivacy}
-                onMarketingConsentChange={setMarketingConsent}
-                disabled={isSending}
-              />
-            ) : null}
-
             {error ? (
               <p className="mt-3 text-sm text-red-600" role="alert">
                 {error}
@@ -610,7 +683,7 @@ export function LoginForm({
             <button
               type="button"
               onClick={() => void handleSendCode()}
-              disabled={isSending || !phoneValid || !canProceed}
+              disabled={isSending || !phoneValid}
               className="mt-5 w-full rounded-xl bg-[#036AAF] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#025a94] disabled:opacity-45"
             >
               {isSending ? "Gönderiliyor..." : "Devam Et"}
