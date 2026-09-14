@@ -19,6 +19,7 @@ import {
   WORK_SHIFTS,
   WORK_TYPES,
 } from "@/lib/data/listing-constants";
+import { PositionRequestDialog } from "@/components/employer/position-request-dialog";
 import { getAllPositions } from "@/lib/data/positions";
 import { auth, db } from "@/lib/firebase";
 import { isEmployerSigningOut } from "@/lib/auth/panel-sign-out";
@@ -74,9 +75,12 @@ export default function IlanDuzenlePage() {
   const listingId = typeof params.id === "string" ? params.id : "";
 
   const [isAuthReady, setIsAuthReady] = useState(false);
+  const [authUid, setAuthUid] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState<string | null>(null);
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [allPositions, setAllPositions] = useState<string[]>([]);
   const [isLoadingPositions, setIsLoadingPositions] = useState(true);
+  const [positionRequestOpen, setPositionRequestOpen] = useState(false);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -143,8 +147,8 @@ export default function IlanDuzenlePage() {
 
   const filteredPositions = useMemo(() => {
     const query = positionSearch.trim().toLocaleLowerCase("tr");
+    if (!query) return [];
     const available = allPositions.filter((p) => !positions.includes(p));
-    if (!query) return available.slice(0, 12);
     return available
       .filter((p) => p.toLocaleLowerCase("tr").includes(query))
       .slice(0, 12);
@@ -163,6 +167,7 @@ export default function IlanDuzenlePage() {
         router.replace("/isveren/giris");
         return;
       }
+      setAuthUid(user.uid);
       setIsAuthReady(true);
     });
     return () => unsubscribe();
@@ -190,6 +195,8 @@ export default function IlanDuzenlePage() {
           const profile = profileSnap.data();
           setCompanyCity((profile.city as string | undefined) ?? "");
           setCompanyDistrict((profile.district as string | undefined) ?? "");
+          const name = String(profile.companyName ?? "").trim();
+          setCompanyName(name || null);
         }
       } catch (err) {
         console.error("Profile load failed:", err);
@@ -472,6 +479,7 @@ export default function IlanDuzenlePage() {
   }
 
   return (
+    <>
     <div>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -671,9 +679,19 @@ export default function IlanDuzenlePage() {
 
         <section>
           <SectionHeader title="Pozisyonlar" />
-          <p className="-mt-3 mb-4 text-sm text-neutral-500">
-            En az bir pozisyon seçmen önerilir.
-          </p>
+          <div className="-mt-3 mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+            <p className="text-sm text-neutral-500">
+              En az bir pozisyon seçmen önerilir.
+            </p>
+            <button
+              type="button"
+              onClick={() => setPositionRequestOpen(true)}
+              disabled={isSubmitting || !authUid}
+              className="text-sm font-medium text-[#036AAF] transition-colors hover:text-[#025a94] hover:underline disabled:opacity-50"
+            >
+              Aradığınız meslek yok mu?
+            </button>
+          </div>
 
           {positions.length > 0 ? (
             <div className="mb-4 flex flex-wrap gap-2">
@@ -730,9 +748,19 @@ export default function IlanDuzenlePage() {
               ))}
             </ul>
           ) : positionSearch.trim() ? (
-            <p className="mt-2 text-sm text-neutral-500">
-              Eşleşen pozisyon bulunamadı.
-            </p>
+            <div className="mt-2 rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3">
+              <p className="text-sm text-neutral-600">
+                &ldquo;{positionSearch.trim()}&rdquo; listede yok.
+              </p>
+              <button
+                type="button"
+                onClick={() => setPositionRequestOpen(true)}
+                disabled={isSubmitting || !authUid}
+                className="mt-2 text-sm font-semibold text-[#036AAF] transition-colors hover:text-[#025a94] disabled:opacity-50"
+              >
+                Listeye ekle talebi gönder
+              </button>
+            </div>
           ) : null}
         </section>
 
@@ -915,5 +943,16 @@ export default function IlanDuzenlePage() {
         </button>
       </form>
     </div>
+
+    {authUid ? (
+      <PositionRequestDialog
+        open={positionRequestOpen}
+        initialText={positionSearch.trim()}
+        userId={authUid}
+        userDisplayName={companyName}
+        onClose={() => setPositionRequestOpen(false)}
+      />
+    ) : null}
+    </>
   );
 }
