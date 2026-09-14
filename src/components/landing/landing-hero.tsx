@@ -1,11 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
+import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { EmployerMobileNoticeModal } from "./employer-mobile-notice-modal";
-import { useState } from "react";
 
 type LandingHeroProps = {
   onScrollToApp: () => void;
@@ -39,17 +38,6 @@ export function LandingHero({ onScrollToApp }: LandingHeroProps) {
           <source src="/hero-bg.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 z-[1] bg-black/50" aria-hidden />
-
-        <div className="pointer-events-none absolute right-1.5 bottom-[1.5%] z-[2] md:right-4 md:bottom-[3%]">
-          <Image
-            src="/ekmek_icon.svg"
-            alt="Ekmek"
-            width={80}
-            height={80}
-            className="size-16 rounded-xl drop-shadow-[0_4px_24px_rgba(0,0,0,0.35)] md:size-20"
-            priority
-          />
-        </div>
 
         <div className="relative z-10 flex h-full w-full flex-col items-start justify-end pt-[calc(72px+2rem)] pr-6 pb-[12%] pl-[8%] text-left md:pr-10 md:pb-[10%] md:pl-[10%]">
           <h1 className="max-w-[min(100%,42rem)] text-4xl leading-[1.02] font-black tracking-tight text-white drop-shadow-sm sm:text-5xl md:text-6xl lg:text-7xl">

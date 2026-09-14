@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { AuthModalProvider } from "@/components/auth/auth-modal";
 import Header from "@/components/header";
 import { PanelHeaderProvider } from "@/components/panel/panel-header-context";
+import { LandingFooterMascot } from "@/components/landing/landing-footer-mascot";
 import { SiteFooter } from "@/components/site-footer";
 import { GLOBAL_HEADER_HEIGHT_PX } from "@/lib/layout-constants";
 
@@ -22,6 +23,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
         >
           {children}
         </div>
+        {isLanding ? <LandingFooterMascot /> : null}
         <SiteFooter />
       </PanelHeaderProvider>
     </AuthModalProvider>

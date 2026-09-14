@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import { Apple, Download, Sparkles } from "lucide-react";
+import { Apple, Check } from "lucide-react";
 import type { ReactNode } from "react";
 import {
   APP_STORE_URL,
@@ -51,24 +50,25 @@ function StoreButton({
   const enabled = href.length > 0;
   const content = (
     <>
-      <span className="flex size-10 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/10">
+      <span className="flex size-9 items-center justify-center rounded-lg bg-white/10">
         {icon}
       </span>
       <span className="text-left">
-        <span className="block text-[10px] font-medium uppercase tracking-[0.12em] text-white/65">
+        <span className="block text-[10px] font-medium uppercase tracking-wider text-white/60">
           {subtitle}
         </span>
-        <span className="block text-sm font-semibold text-white sm:text-[0.9375rem]">
-          {title}
-        </span>
+        <span className="block text-sm font-semibold text-white">{title}</span>
       </span>
       {!enabled ? (
-        <span className="ml-auto rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white/85">
-          Çok yakında
+        <span className="ml-1 rounded-md bg-white/10 px-2 py-0.5 text-[10px] font-medium text-white/70">
+          Yakında
         </span>
       ) : null}
     </>
   );
+
+  const className =
+    "inline-flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 transition-colors hover:border-white/20 hover:bg-white/[0.1]";
 
   if (enabled && href) {
     return (
@@ -76,7 +76,7 @@ function StoreButton({
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="group inline-flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-3.5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.12] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25)] sm:w-auto sm:min-w-[16rem]"
+        className={className}
       >
         {content}
       </a>
@@ -84,117 +84,83 @@ function StoreButton({
   }
 
   return (
-    <div
-      aria-disabled="true"
-      className="inline-flex w-full cursor-not-allowed items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.05] px-4 py-3.5 opacity-80 sm:w-auto sm:min-w-[16rem]"
-    >
+    <div aria-disabled="true" className={`${className} cursor-default opacity-75`}>
       {content}
     </div>
   );
 }
 
-const screenshots = [
+const highlights = [
   {
-    src: "/screenshots/app-feed.png",
-    alt: "Ekmek uygulamasında ilan kaydırma ekranı",
-    tilt: "-rotate-3 sm:-rotate-6",
-    zIndex: "z-[1]",
+    title: "Ücretsiz kayıt",
+    description: "Dakikalar içinde profilini oluştur.",
   },
   {
-    src: "/screenshots/app-profile.png",
-    alt: "Ekmek uygulamasında profil oluşturma ekranı",
-    tilt: "rotate-3 sm:rotate-6",
-    zIndex: "z-[2]",
+    title: "CV gerekmez",
+    description: "Adım adım profil doldurma.",
   },
-];
+  {
+    title: "Doğrudan mesaj",
+    description: "Eşleşince anında iletişim.",
+  },
+] as const;
 
 export function LandingAppDownload() {
   return (
     <section
       id="uygulama"
-      className="relative scroll-mt-[72px] overflow-hidden bg-[#0f2540] px-6 py-20 md:px-10 md:py-28"
+      className="relative scroll-mt-[72px] overflow-hidden bg-[#0f2540] px-6 py-12 md:px-10 md:py-16"
       aria-labelledby="uygulama-baslik"
     >
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_20%_50%,rgba(3,106,175,0.25),transparent)]"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -right-32 top-0 size-96 rounded-full bg-[#036AAF]/10 blur-3xl"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(3,106,175,0.2),transparent)]"
         aria-hidden
       />
 
-      <FadeInSection className="relative mx-auto max-w-6xl">
-        <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
-          <div className="text-center lg:text-left">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#7ec8ff]">
-              <Download className="size-3.5" aria-hidden />
-              Mobil uygulama
-            </span>
-            <h2
-              id="uygulama-baslik"
-              className="mt-5 text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-[2.75rem] lg:leading-[1.1]"
+      <FadeInSection className="relative mx-auto max-w-3xl">
+        <div className="text-center">
+          <h2
+            id="uygulama-baslik"
+            className="text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-[2.5rem] lg:leading-[1.12]"
+          >
+            Ekmek&apos;i cebine indir
+          </h2>
+          <p className="mx-auto mt-3 max-w-lg text-base leading-relaxed text-white/65 sm:text-lg">
+            Profilini oluştur, ilanları keşfet, eşleştiğin işverenle konuş —
+            hepsi telefonundan.
+          </p>
+        </div>
+
+        <ul className="mt-8 grid gap-3 sm:grid-cols-3 sm:gap-4">
+          {highlights.map((item) => (
+            <li
+              key={item.title}
+              className="rounded-xl border border-white/8 bg-white/[0.04] px-4 py-4 text-left"
             >
-              Ekmek&apos;i cebine indir
-            </h2>
-            <p className="mt-4 max-w-md text-base leading-relaxed text-white/70 sm:text-lg lg:mx-0 mx-auto">
-              Profilini dakikalar içinde oluştur, sana uygun ilanları keşfet ve
-              eşleştiğin işverenle anında konuş — hepsi telefonundan.
-            </p>
+              <span className="mb-2 flex size-6 items-center justify-center rounded-full bg-[#036AAF]/30">
+                <Check className="size-3.5 text-[#7ec8ff]" strokeWidth={2.5} aria-hidden />
+              </span>
+              <p className="text-sm font-semibold text-white">{item.title}</p>
+              <p className="mt-1 text-xs leading-relaxed text-white/55">
+                {item.description}
+              </p>
+            </li>
+          ))}
+        </ul>
 
-            <ul className="mt-8 hidden space-y-3 text-left sm:block">
-              {[
-                "Kayıt ücretsiz, dakikalar içinde başla",
-                "CV yüklemeden profilini tamamla",
-                "Eşleşince doğrudan mesajlaş",
-              ].map((item) => (
-                <li
-                  key={item}
-                  className="flex items-center gap-3 text-sm text-white/75"
-                >
-                  <Sparkles className="size-4 shrink-0 text-[#7ec8ff]" aria-hidden />
-                  {item}
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-10 flex flex-col items-center gap-3 lg:items-start">
-              <StoreButton
-                href={APP_STORE_URL}
-                icon={<Apple className="size-5" aria-hidden />}
-                subtitle="Download on the"
-                title="App Store'dan İndir"
-              />
-              <StoreButton
-                href={GOOGLE_PLAY_URL}
-                icon={<GooglePlayIcon className="size-5" />}
-                subtitle="Get it on"
-                title="Google Play'den İndir"
-              />
-            </div>
-          </div>
-
-          <div className="relative mx-auto flex w-full max-w-lg items-end justify-center gap-3 sm:gap-5 lg:max-w-none lg:justify-end">
-            <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0f2540] to-transparent lg:hidden"
-              aria-hidden
-            />
-            {screenshots.map(({ src, alt, tilt, zIndex }) => (
-              <div
-                key={src}
-                className={`relative w-[46%] max-w-[13rem] transition-transform duration-500 hover:-translate-y-2 sm:max-w-[14.5rem] ${tilt} ${zIndex}`}
-              >
-                <Image
-                  src={src}
-                  alt={alt}
-                  width={580}
-                  height={1160}
-                  className="h-auto w-full drop-shadow-[0_24px_60px_rgba(0,0,0,0.45)]"
-                  sizes="(max-width: 640px) 46vw, 14.5rem"
-                />
-              </div>
-            ))}
-          </div>
+        <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:justify-center">
+          <StoreButton
+            href={APP_STORE_URL}
+            icon={<Apple className="size-5" aria-hidden />}
+            subtitle="Download on the"
+            title="App Store"
+          />
+          <StoreButton
+            href={GOOGLE_PLAY_URL}
+            icon={<GooglePlayIcon className="size-5" />}
+            subtitle="Get it on"
+            title="Google Play"
+          />
         </div>
       </FadeInSection>
     </section>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, HelpCircle } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { FadeInSection } from "./fade-in-section";
@@ -56,7 +56,7 @@ function FaqItem({
       className={`overflow-hidden rounded-2xl border transition-all duration-300 ${
         open
           ? "border-[#036AAF]/20 bg-white shadow-[0_8px_32px_rgba(3,106,175,0.08)]"
-          : "border-neutral-200/70 bg-white/80 hover:border-[#036AAF]/10 hover:bg-white"
+          : "border-[#0f2540]/10 bg-white/90 hover:border-[#036AAF]/15 hover:bg-white"
       }`}
     >
       <button
@@ -106,7 +106,7 @@ export function LandingFaq() {
 
   return (
     <section
-      className="relative overflow-hidden bg-white px-6 py-20 md:px-10 md:py-28"
+      className="relative overflow-hidden bg-[#eef3f8] px-6 pt-12 pb-8 md:px-10 md:pt-16 md:pb-10"
       aria-labelledby="sss-baslik"
     >
       <div
@@ -116,23 +116,19 @@ export function LandingFaq() {
 
       <FadeInSection className="relative mx-auto max-w-3xl">
         <div className="text-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-[#fafbfc] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#036AAF] ring-1 ring-[#036AAF]/10">
-            <HelpCircle className="size-3.5" aria-hidden />
-            Merak edilenler
-          </span>
           <h2
             id="sss-baslik"
-            className="mt-5 text-3xl font-black tracking-tight text-[#0f2540] sm:text-4xl lg:text-[2.75rem] lg:leading-[1.1]"
+            className="text-3xl font-black tracking-tight text-[#0f2540] sm:text-4xl lg:text-[2.75rem] lg:leading-[1.1]"
           >
             Sıkça sorulan sorular
           </h2>
-          <p className="mt-4 text-base leading-relaxed text-[#1a1a1a]/55 sm:text-lg">
+          <p className="mt-3 text-base leading-relaxed text-[#1a1a1a]/55 sm:text-lg">
             Aklına takılan bir şey mi var? En çok sorulan konuları burada
             topladık.
           </p>
         </div>
 
-        <div className="mt-10 space-y-3">
+        <div className="mt-6 space-y-3">
           {faqItems.map((item, index) => (
             <FaqItem
               key={item.question}
@@ -147,7 +143,7 @@ export function LandingFaq() {
           ))}
         </div>
 
-        <p className="mt-10 text-center text-sm text-[#1a1a1a]/45">
+        <p className="mt-6 text-center text-sm text-[#1a1a1a]/45">
           Aradığını bulamadın mı?{" "}
           <Link
             href="/destek"
