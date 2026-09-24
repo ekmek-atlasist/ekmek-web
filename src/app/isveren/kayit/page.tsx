@@ -426,7 +426,7 @@ export default function IsverenKayitPage() {
                     İşletme Fotoğrafı
                   </h2>
                   <p className="mt-1 text-sm text-[#1a1a1a]/60">
-                    Önerilen: yatay fotoğraf — mobil kartta böyle görünür.
+                    Yatay fotoğraf önerilir, mobil kartta böyle görünür.
                   </p>
 
                   <input

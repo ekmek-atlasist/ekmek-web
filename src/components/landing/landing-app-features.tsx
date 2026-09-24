@@ -49,7 +49,8 @@ export function LandingAppFeatures() {
             Her adımda yanında
           </h2>
           <p className="mt-3 text-base leading-relaxed text-[#1a1a1a]/55 sm:text-lg">
-            Keşfetmekten mesajlaşmaya — iş arama sürecinin tamamı tek uygulamada.
+            Keşfetmekten mesajlaşmaya kadar iş arama sürecinin tamamı tek
+            uygulamada.
           </p>
         </div>
 

@@ -24,6 +24,7 @@ import {
   isValidOtpCode,
   isValidPhoneDigits,
 } from "@/lib/auth/login-helpers";
+import { AppStoreButtons } from "@/components/app-store-buttons";
 import {
   getSocialAuthErrorMessage,
   isHandledSocialAuthError,
@@ -778,9 +779,16 @@ export function LoginForm({
             <p className="text-sm leading-relaxed text-[#1a1a1a]/70">
               İş aramak ve başvuru yapmak için{" "}
               <span className="font-semibold text-[#0f2540]">Ekmek mobil uygulamasını</span>{" "}
-              kullanabilirsin.
+              indir.
             </p>
           </div>
+
+          <AppStoreButtons
+            className="mt-4"
+            compact
+            theme="light"
+            layout="column"
+          />
 
           {error ? (
             <p

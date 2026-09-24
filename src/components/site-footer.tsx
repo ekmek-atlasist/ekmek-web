@@ -1,6 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Instagram, Linkedin, Twitter } from "lucide-react";
+import { AppStoreButtons } from "@/components/app-store-buttons";
+import { AtlasFooterCredit } from "@/components/atlas-footer-credit";
+import { IskurFooterBadge } from "@/components/iskur-footer-badge";
 
 type SiteFooterProps = {
   className?: string;
@@ -86,7 +89,7 @@ export function SiteFooter({ className }: SiteFooterProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="text-white/45 transition-colors hover:text-white"
-              aria-label="Instagram — ekmek.is"
+              aria-label="Instagram: ekmek.is"
             >
               <Instagram className="size-5" strokeWidth={1.75} />
             </a>
@@ -106,6 +109,16 @@ export function SiteFooter({ className }: SiteFooterProps) {
             </a>
           </div>
         </div>
+
+        <div className="mt-8 border-t border-white/10 pt-6 sm:mt-10 sm:pt-7">
+          <p className="mb-4 text-center text-xs font-medium text-white/50">
+            Mobil uygulamayı indir
+          </p>
+          <AppStoreButtons compact theme="dark" />
+        </div>
+
+        <IskurFooterBadge />
+        <AtlasFooterCredit />
       </div>
     </footer>
   );

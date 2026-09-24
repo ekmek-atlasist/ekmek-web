@@ -198,8 +198,8 @@ export function LandingCategories() {
             Her sektörden iş burada
           </h2>
           <p className="mt-3 text-base leading-relaxed text-[#1a1a1a]/55 sm:text-lg">
-            İnşaattan sağlığa, lojistikten restorana — aradığın pozisyon hangi
-            alanda olursa olsun, Ekmek&apos;te seni bekliyor.
+            İnşaattan sağlığa, lojistikten restorana kadar aradığın pozisyon
+            hangi alanda olursa olsun Ekmek&apos;te seni bekliyor.
           </p>
         </div>
 
@@ -207,33 +207,8 @@ export function LandingCategories() {
           {/* Gradient border frame */}
           <div className="rounded-[1.75rem] bg-gradient-to-br from-[#036AAF]/20 via-[#0f2540]/10 to-[#036AAF]/15 p-px shadow-[0_24px_64px_rgba(15,37,64,0.1)] sm:rounded-[2rem]">
             <div className="overflow-hidden rounded-[calc(1.75rem-1px)] bg-gradient-to-b from-[#f8fbff] to-[#eef4fa] sm:rounded-[calc(2rem-1px)]">
-              {/* Toolbar */}
-              <div className="flex items-center justify-between gap-4 border-b border-[#0f2540]/6 bg-white/60 px-4 py-3 backdrop-blur-sm sm:px-5 sm:py-3.5">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#036AAF]/80 sm:text-[0.8125rem]">
-                  {JOB_CATEGORIES.length} sektör kategorisi
-                </p>
-                <div className="flex gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => scrollCategories(-1)}
-                    className="flex size-8 items-center justify-center rounded-full border border-[#036AAF]/15 bg-white text-[#036AAF] shadow-sm transition-all hover:border-[#036AAF]/30 hover:bg-[#036AAF]/5 hover:shadow-md active:scale-95 sm:size-9"
-                    aria-label="Kategorileri sola kaydır"
-                  >
-                    <ChevronLeft className="size-4 sm:size-[1.125rem]" aria-hidden />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => scrollCategories(1)}
-                    className="flex size-8 items-center justify-center rounded-full border border-[#036AAF]/15 bg-white text-[#036AAF] shadow-sm transition-all hover:border-[#036AAF]/30 hover:bg-[#036AAF]/5 hover:shadow-md active:scale-95 sm:size-9"
-                    aria-label="Kategorileri sağa kaydır"
-                  >
-                    <ChevronRight className="size-4 sm:size-[1.125rem]" aria-hidden />
-                  </button>
-                </div>
-              </div>
-
               {/* Carousel area */}
-              <div className="relative px-1 py-4 sm:px-2 sm:py-5">
+              <div className="relative px-1 py-5 sm:px-2 sm:py-6">
                 <div
                   className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[#eef4fa] via-[#eef4fa]/80 to-transparent sm:w-16"
                   aria-hidden
@@ -242,6 +217,23 @@ export function LandingCategories() {
                   className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[#eef4fa] via-[#eef4fa]/80 to-transparent sm:w-16"
                   aria-hidden
                 />
+
+                <button
+                  type="button"
+                  onClick={() => scrollCategories(-1)}
+                  className="absolute top-1/2 left-2 z-20 flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-[#036AAF] shadow-[0_4px_16px_rgba(15,37,64,0.14)] ring-1 ring-[#0f2540]/8 backdrop-blur-sm transition-all hover:bg-white hover:shadow-[0_6px_20px_rgba(3,106,175,0.22)] active:scale-95 sm:left-3 sm:size-10"
+                  aria-label="Kategorileri sola kaydır"
+                >
+                  <ChevronLeft className="size-[1.125rem]" aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollCategories(1)}
+                  className="absolute top-1/2 right-2 z-20 flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-[#036AAF] shadow-[0_4px_16px_rgba(15,37,64,0.14)] ring-1 ring-[#0f2540]/8 backdrop-blur-sm transition-all hover:bg-white hover:shadow-[0_6px_20px_rgba(3,106,175,0.22)] active:scale-95 sm:right-3 sm:size-10"
+                  aria-label="Kategorileri sağa kaydır"
+                >
+                  <ChevronRight className="size-[1.125rem]" aria-hidden />
+                </button>
 
                 <div className="space-y-3 sm:space-y-4">
                   {CATEGORY_ROWS.map((row, index) => (

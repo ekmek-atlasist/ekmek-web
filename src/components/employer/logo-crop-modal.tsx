@@ -47,8 +47,8 @@ export function LogoCropModal({
         setBackgroundColor(analysis.suggestedBackground);
         setAnalysisHint(
           analysis.suggestedMode === "contain"
-            ? "Geniş veya şeffaf logo — sığdırma daha uygun."
-            : "Kapak fotoğrafı gibi — kırpabilirsin.",
+            ? "Geniş veya şeffaf logo için sığdırma daha uygun."
+            : "Kapak fotoğrafı gibi bir görsel, kırpabilirsin.",
         );
       } catch {
         if (!cancelled) {

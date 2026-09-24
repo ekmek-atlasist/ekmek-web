@@ -298,7 +298,7 @@ function getWelcomeSubtitle(stats: DashboardData["stats"]): string {
   }
 
   if (stats.unreadMessages > 0) {
-    return `${stats.unreadMessages} okunmamış mesajın var — adaylarınla iletişimde kal.`;
+    return `${stats.unreadMessages} okunmamış mesajın var, adaylarınla iletişimde kal.`;
   }
 
   if (stats.totalListings === 0) {
@@ -794,7 +794,7 @@ export default function PanelOzetPage() {
               </p>
               <p className="mt-1 text-sm leading-relaxed text-emerald-800/85">
                 Bekleyen başvuru veya mesajın yok. Aktif ilanların aday
-                toplamaya devam ediyor — yeni hareket olduğunda burada
+                toplamaya devam ediyor; yeni hareket olduğunda burada
                 göreceksin.
               </p>
             </div>

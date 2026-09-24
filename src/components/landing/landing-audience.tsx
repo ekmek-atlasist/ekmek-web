@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Building2, UserRound } from "lucide-react";
+import { AuthEntryButton } from "@/components/auth/auth-entry-button";
 import { MASCOT_IMAGES } from "@/lib/data/category-icons";
 import { FadeInSection } from "./fade-in-section";
 
@@ -10,7 +11,7 @@ const cards = [
     description:
       "Profilini oluştur, sana uygun ilanları keşfet ve eşleştiğin işverenle anında konuş.",
     mascot: MASCOT_IMAGES.jobSeeker,
-    mascotAlt: "Ekmek maskotu — iş arayan",
+    mascotAlt: "İş arayanlar için Ekmek maskotu",
     icon: UserRound,
     cta: { label: "Uygulamayı indir", href: "#uygulama" },
   },
@@ -19,9 +20,9 @@ const cards = [
     description:
       "İlanını dakikalar içinde yayınla, adayları incele ve doğru kişiyi hızla bul.",
     mascot: MASCOT_IMAGES.employer,
-    mascotAlt: "Ekmek maskotu — işveren",
+    mascotAlt: "İşverenler için Ekmek maskotu",
     icon: Building2,
-    cta: { label: "İşveren girişi", href: "/isveren/giris" },
+    cta: null,
   },
 ] as const;
 
@@ -49,7 +50,7 @@ export function LandingAudience() {
             Kimler için?
           </h2>
           <p className="mt-3 text-base leading-relaxed text-white/70 sm:text-lg">
-            İster aday ol, ister ilan ver — Ekmek iki tarafı da aynı hızda
+            İster aday ol ister ilan ver, Ekmek iki tarafı da aynı hızda
             buluşturur.
           </p>
         </div>
@@ -72,13 +73,19 @@ export function LandingAudience() {
                     <p className="mt-4 text-sm leading-relaxed text-white/75 sm:text-base">
                       {card.description}
                     </p>
-                    <Link
-                      href={card.cta.href}
-                      className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#0f2540] transition-colors hover:bg-white/90"
-                    >
-                      {card.cta.label}
-                      <ArrowRight className="size-4" aria-hidden />
-                    </Link>
+                    <div className="mt-6">
+                      {card.cta ? (
+                        <Link
+                          href={card.cta.href}
+                          className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#0f2540] transition-colors hover:bg-white/90"
+                        >
+                          {card.cta.label}
+                          <ArrowRight className="size-4" aria-hidden />
+                        </Link>
+                      ) : (
+                        <AuthEntryButton label="Giriş" />
+                      )}
+                    </div>
                   </div>
 
                   <div className="relative mx-auto w-full max-w-[11rem] shrink-0 sm:mx-0 sm:max-w-[10rem]">
