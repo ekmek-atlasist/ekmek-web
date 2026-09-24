@@ -5,7 +5,13 @@ import { signInWithCustomToken, signOut } from "firebase/auth";
 import { httpsCallable } from "firebase/functions";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useRef, useState, type ClipboardEvent, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ClipboardEvent,
+  type KeyboardEvent,
+} from "react";
 import { ArrowLeft, Check, Loader2, Smartphone, UserRoundX } from "lucide-react";
 import {
   AuthMethodPicker,
@@ -26,11 +32,16 @@ import {
 } from "@/lib/auth/login-helpers";
 import { AppStoreButtons } from "@/components/app-store-buttons";
 import {
+  clearPendingSocialRedirect,
+  consumeSocialRedirectResult,
   getSocialAuthErrorMessage,
   isHandledSocialAuthError,
+  isPopupUnsupportedError,
+  readPendingSocialRedirect,
   resolveEmployerAuthRoute,
   signInWithApplePopup,
   signInWithGooglePopup,
+  startSocialRedirect,
 } from "@/lib/auth/social-auth";
 import {
   clearPendingUserConsents,
@@ -397,6 +408,53 @@ export function LoginForm({
     setError("Bir hata oluştu, tekrar dene");
   }
 
+  const postAuthRoutingRef = useRef(handlePostAuthRouting);
+  useEffect(() => {
+    postAuthRoutingRef.current = handlePostAuthRouting;
+  });
+
+  useEffect(() => {
+    const pending = readPendingSocialRedirect();
+    if (!pending) return;
+
+    // Aynı sayfada ikinci bir form varsa tekrar denemesin.
+    clearPendingSocialRedirect();
+
+    const pendingProvider: "google" | "apple" = pending;
+    let cancelled = false;
+    setSocialProvider(pendingProvider);
+    setSocialLoading(true);
+
+    async function finishRedirectSignIn() {
+      try {
+        const result = await consumeSocialRedirectResult();
+        if (cancelled) return;
+
+        if (!result) {
+          setStage("choose");
+          return;
+        }
+
+        setAccountLabel(result.user.email ?? "Bu hesap");
+        setStage("redirecting");
+        await postAuthRoutingRef.current(result.user.uid);
+      } catch (err) {
+        if (cancelled) return;
+        logAuthError(`Social redirect ${pendingProvider}`, err);
+        setError(getSocialAuthErrorMessage(err, pendingProvider));
+        setStage("choose");
+      } finally {
+        if (!cancelled) setSocialLoading(false);
+      }
+    }
+
+    void finishRedirectSignIn();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   async function handleSendCode() {
     setError(null);
 
@@ -563,6 +621,16 @@ export function LoginForm({
 
       await handlePostAuthRouting(result.user.uid);
     } catch (err) {
+      if (isPopupUnsupportedError(err)) {
+        try {
+          await startSocialRedirect(activeProvider);
+          return;
+        } catch (redirectError) {
+          clearPendingSocialRedirect();
+          logAuthError(`Social redirect ${activeProvider}`, redirectError);
+        }
+      }
+
       logAuthError(`Social ${activeProvider}`, err);
       const message = getSocialAuthErrorMessage(err, activeProvider);
       if (message) {

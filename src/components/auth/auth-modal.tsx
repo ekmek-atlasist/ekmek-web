@@ -5,6 +5,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -13,6 +14,7 @@ import {
   LoginForm,
   type LoginFormMode,
 } from "@/components/auth/login-form";
+import { readPendingSocialRedirect } from "@/lib/auth/social-auth";
 
 type AuthModalContextValue = {
   openAuthModal: (mode: LoginFormMode) => void;
@@ -48,6 +50,13 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     () => ({ openAuthModal, closeAuthModal }),
     [openAuthModal, closeAuthModal],
   );
+
+  // Açılır pencere engellenip yönlendirmeyle giriş yapıldıysa formu geri aç.
+  useEffect(() => {
+    if (readPendingSocialRedirect()) {
+      openAuthModal("login");
+    }
+  }, [openAuthModal]);
 
   return (
     <AuthModalContext.Provider value={value}>

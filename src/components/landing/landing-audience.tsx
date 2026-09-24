@@ -13,6 +13,7 @@ const cards = [
     mascot: MASCOT_IMAGES.jobSeeker,
     mascotAlt: "İş arayanlar için Ekmek maskotu",
     icon: UserRound,
+    note: "Uygulamayı indir, telefon numaranla dakikalar içinde başla.",
     cta: { label: "Uygulamayı indir", href: "#uygulama" },
   },
   {
@@ -22,6 +23,7 @@ const cards = [
     mascot: MASCOT_IMAGES.employer,
     mascotAlt: "İşverenler için Ekmek maskotu",
     icon: Building2,
+    note: "Uygulamayı indirebilir ya da bilgisayarından web panelini kullanabilirsin.",
     cta: null,
   },
 ] as const;
@@ -62,7 +64,7 @@ export function LandingAudience() {
             return (
               <article
                 key={card.title}
-                className="group relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/[0.07] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm sm:p-8"
+                className="group relative rounded-[1.75rem] border border-white/10 bg-white/[0.07] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm sm:p-8"
               >
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
                   <div className="max-w-sm">
@@ -72,6 +74,9 @@ export function LandingAudience() {
                     </span>
                     <p className="mt-4 text-sm leading-relaxed text-white/75 sm:text-base">
                       {card.description}
+                    </p>
+                    <p className="mt-2.5 text-xs leading-relaxed text-white/50 sm:text-sm">
+                      {card.note}
                     </p>
                     <div className="mt-6">
                       {card.cta ? (
