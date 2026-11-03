@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   Ban,
   Flag,
+  Handshake,
   Headphones,
   HelpCircle,
   Loader2,
@@ -27,6 +28,7 @@ import {
   Send,
   Shield,
   Trash2,
+  Undo2,
   User,
   Users,
   X,
@@ -35,8 +37,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  HireConfirmDialog,
+  type HireDialogMode,
+} from "@/components/employer/hire-confirm-dialog";
+import { HireStrip, HiredBadge } from "@/components/employer/hire-strip";
 import { firestoreIsoNow, firestoreLocalIsoNow } from "@/lib/firebase-schema";
 import { auth, db } from "@/lib/firebase";
+import {
+  cancelHire,
+  isHireLive,
+  markHired,
+  respondToHire,
+  watchHireForMatch,
+  watchHiresForUser,
+  type HireRecord,
+} from "@/lib/hires";
 import { isEmployerSigningOut } from "@/lib/auth/panel-sign-out";
 
 type MatchRecord = {
@@ -473,6 +489,29 @@ function ApplicantAvatar({
   );
 }
 
+/** Hatırlatmanın çıkması için gereken en az mesaj sayısı (mobille aynı). */
+const HIRE_PROMPT_MIN_MESSAGES = 4;
+
+function hirePromptStorageKey(matchId: string): string {
+  return `hire_prompt_dismissed_${matchId}`;
+}
+
+function readHirePromptDismissed(matchId: string): boolean {
+  try {
+    return window.localStorage.getItem(hirePromptStorageKey(matchId)) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeHirePromptDismissed(matchId: string): void {
+  try {
+    window.localStorage.setItem(hirePromptStorageKey(matchId), "1");
+  } catch {
+    // Depolama kapalıysa hatırlatma bu oturumda kapatılmış sayılır.
+  }
+}
+
 export default function PanelMesajlarPage() {
   const router = useRouter();
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -520,6 +559,35 @@ export default function PanelMesajlarPage() {
   const [isDeletingChat, setIsDeletingChat] = useState(false);
   const [deleteChatError, setDeleteChatError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedbackTone, setFeedbackTone] = useState<"success" | "error">(
+    "success",
+  );
+
+  const [userType, setUserType] = useState<"kurumsal" | "bireysel" | null>(null);
+  // Kayıt matchId ile birlikte tutulur; sohbet değişince eski durum
+  // gösterilmesin diye seçili eşleşmeyle karşılaştırılır.
+  const [hireState, setHireState] = useState<{
+    matchId: string;
+    hire: HireRecord | null;
+  } | null>(null);
+  const [hiresByMatchId, setHiresByMatchId] = useState<
+    Record<string, HireRecord>
+  >({});
+  const [hireDialogMode, setHireDialogMode] = useState<HireDialogMode | null>(
+    null,
+  );
+  const [isHireSubmitting, setIsHireSubmitting] = useState(false);
+  const [dismissedHirePrompts, setDismissedHirePrompts] = useState<
+    Record<string, boolean>
+  >({});
+
+  const showFeedback = useCallback(
+    (message: string, tone: "success" | "error" = "success") => {
+      setFeedbackTone(tone);
+      setFeedback(message);
+    },
+    [],
+  );
 
   const blockedUserIdSet = useMemo(
     () => new Set(blockedUserIds),
@@ -1089,6 +1157,42 @@ export default function PanelMesajlarPage() {
   }, [feedback]);
 
   useEffect(() => {
+    if (!employerId) return;
+
+    let cancelled = false;
+
+    getDoc(doc(db, "users", employerId))
+      .then((snapshot) => {
+        if (cancelled || !snapshot.exists()) return;
+        const value = snapshot.data().userType;
+        if (value === "kurumsal" || value === "bireysel") setUserType(value);
+      })
+      .catch((err) => {
+        console.error("User type load failed:", err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [employerId]);
+
+  useEffect(() => {
+    if (!employerId) return;
+    return watchHiresForUser(employerId, setHiresByMatchId);
+  }, [employerId]);
+
+  useEffect(() => {
+    const matchId = selectedChat?.matchId;
+    if (!matchId) return;
+
+    return watchHireForMatch(
+      matchId,
+      (record) => setHireState({ matchId, hire: record }),
+      (err) => console.error("Hire watch failed:", err),
+    );
+  }, [selectedChat?.matchId]);
+
+  useEffect(() => {
     if (!employerId || !selectedChat) return;
     if (blockedUserIdSet.has(selectedChat.applicantId)) {
       setSelectedChat(null);
@@ -1226,6 +1330,101 @@ export default function PanelMesajlarPage() {
     ? listingTitles[selectedMatch.listingId] ?? null
     : null;
 
+  const isEmployerUser = userType === "kurumsal";
+
+  const activeHireState =
+    hireState && hireState.matchId === selectedChat?.matchId
+      ? hireState
+      : null;
+  const hire = activeHireState?.hire ?? null;
+  const isHireLoaded = activeHireState !== null;
+
+  const hireBadgeStatus =
+    hire && isHireLive(hire.status) ? hire.status : null;
+
+  /** Menüdeki işe alım satırı kayıt durumuna göre biçim alır. */
+  const hireMenuAction: "mark" | "undo" | null =
+    isEmployerUser && isHireLoaded
+      ? hire && isHireLive(hire.status)
+        ? "undo"
+        : "mark"
+      : null;
+
+  // Tek taraflı veya henüz çok kısa sohbette işe alım sorusu anlamsız olur.
+  const hirePromptEligible = useMemo(() => {
+    if (!selectedChat?.conversationId) return false;
+    if (messages.length < HIRE_PROMPT_MIN_MESSAGES) return false;
+    return new Set(messages.map((message) => message.senderId)).size >= 2;
+  }, [messages, selectedChat?.conversationId]);
+
+  const hirePromptDismissed = useMemo(() => {
+    const matchId = selectedChat?.matchId;
+    if (!matchId) return false;
+    return dismissedHirePrompts[matchId] || readHirePromptDismissed(matchId);
+  }, [dismissedHirePrompts, selectedChat?.matchId]);
+
+  const handleDismissHirePrompt = useCallback(() => {
+    if (!selectedChat) return;
+    const { matchId } = selectedChat;
+    setDismissedHirePrompts((current) => ({ ...current, [matchId]: true }));
+    writeHirePromptDismissed(matchId);
+  }, [selectedChat]);
+
+  const handleConfirmHireDialog = useCallback(async () => {
+    const uid = employerIdRef.current;
+    if (!uid || !selectedChat || !hireDialogMode) return;
+
+    const listingId = selectedMatch?.listingId?.trim();
+    setIsHireSubmitting(true);
+
+    try {
+      if (hireDialogMode === "mark") {
+        await markHired({
+          matchId: selectedChat.matchId,
+          employerId: uid,
+          applicantId: selectedChat.applicantId,
+          ...(listingId ? { listingId } : {}),
+        });
+        showFeedback("Kaydedildi. Onayı için kendisine sorduk.");
+      } else {
+        await cancelHire(selectedChat.matchId);
+        showFeedback("İşe alım kaydı kaldırıldı.");
+      }
+      setHireDialogMode(null);
+    } catch (err) {
+      console.error("Hire write failed:", err);
+      showFeedback(
+        hireDialogMode === "mark"
+          ? "Kaydedilemedi. Lütfen tekrar deneyin."
+          : "Kaldırılamadı. Lütfen tekrar deneyin.",
+        "error",
+      );
+    } finally {
+      setIsHireSubmitting(false);
+    }
+  }, [hireDialogMode, selectedChat, selectedMatch, showFeedback]);
+
+  const handleRespondToHire = useCallback(
+    async (confirmed: boolean) => {
+      if (!employerIdRef.current || !selectedChat) return;
+
+      setIsHireSubmitting(true);
+
+      try {
+        await respondToHire(selectedChat.matchId, confirmed);
+        showFeedback(
+          confirmed ? "Hayırlı olsun! Teşekkürler." : "Teşekkürler, not ettik.",
+        );
+      } catch (err) {
+        console.error("Hire response failed:", err);
+        showFeedback("Yanıtın kaydedilemedi. Lütfen tekrar deneyin.", "error");
+      } finally {
+        setIsHireSubmitting(false);
+      }
+    },
+    [selectedChat, showFeedback],
+  );
+
   const messageListItems = useMemo(
     () => buildMessageListItems(messages),
     [messages],
@@ -1264,7 +1463,14 @@ export default function PanelMesajlarPage() {
   return (
     <div className="-mx-6 -mb-6 flex h-[calc(100dvh-10.5rem)] min-h-[480px] flex-col overflow-hidden sm:-mx-8 sm:-mb-8 lg:h-[calc(100dvh-9.5rem)]">
       {feedback ? (
-        <p className="mb-3 shrink-0 rounded-xl bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-800 ring-1 ring-emerald-200/60" role="status">
+        <p
+          className={`mb-3 shrink-0 rounded-xl px-4 py-2.5 text-sm font-medium ring-1 ${
+            feedbackTone === "error"
+              ? "bg-red-50 text-red-800 ring-red-200/60"
+              : "bg-emerald-50 text-emerald-800 ring-emerald-200/60"
+          }`}
+          role="status"
+        >
           {feedback}
         </p>
       ) : null}
@@ -1408,6 +1614,10 @@ export default function PanelMesajlarPage() {
                   const unread = unreadCounts[conversation.id] ?? 0;
                   const preview =
                     conversation.lastMessage?.trim() || "Sohbet başlatıldı";
+                  const matchHireStatus = hiresByMatchId[match.id]?.status;
+                  const listHireStatus = isHireLive(matchHireStatus)
+                    ? matchHireStatus
+                    : null;
 
                   return (
                     <button
@@ -1433,12 +1643,26 @@ export default function PanelMesajlarPage() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
-                          <span
-                            className={`truncate text-sm font-bold ${
-                              isSelected ? "text-[#036AAF]" : "text-[#0f2540]"
-                            }`}
-                          >
-                            {name}
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            <span
+                              className={`truncate text-sm font-bold ${
+                                isSelected ? "text-[#036AAF]" : "text-[#0f2540]"
+                              }`}
+                            >
+                              {name}
+                            </span>
+                            {/* Mesaj önizlemesinin yerini almasın diye isim
+                                satırında küçük bir işaret olarak duruyor. */}
+                            {listHireStatus ? (
+                              <Handshake
+                                className={`size-3.5 shrink-0 ${
+                                  listHireStatus === "confirmed"
+                                    ? "text-[#036AAF]"
+                                    : "text-neutral-300"
+                                }`}
+                                aria-hidden
+                              />
+                            ) : null}
                           </span>
                           <span className="shrink-0 text-[10px] text-neutral-400">
                             {formatMessageTime(
@@ -1625,7 +1849,11 @@ export default function PanelMesajlarPage() {
                     <p className="truncate font-bold text-[#0f2540]">
                       {selectedApplicantName}
                     </p>
-                    {selectedListingTitle ? (
+                    {hireBadgeStatus ? (
+                      <HiredBadge
+                        confirmed={hireBadgeStatus === "confirmed"}
+                      />
+                    ) : selectedListingTitle ? (
                       <p className="truncate text-xs text-neutral-500">
                         {selectedListingTitle}
                       </p>
@@ -1649,7 +1877,42 @@ export default function PanelMesajlarPage() {
                   </button>
 
                   {chatMenuOpen ? (
-                    <div className="absolute right-0 top-full z-30 mt-1 w-48 overflow-hidden rounded-xl border border-neutral-200/80 bg-white py-1 shadow-lg ring-1 ring-black/5">
+                    <div className="absolute right-0 top-full z-30 mt-1 w-64 overflow-hidden rounded-xl border border-neutral-200/80 bg-white py-1 shadow-lg ring-1 ring-black/5">
+                      {hireMenuAction ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setChatMenuOpen(false);
+                              setHireDialogMode(
+                                hireMenuAction === "mark" ? "mark" : "undo",
+                              );
+                            }}
+                            className="flex w-full items-start gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-neutral-50"
+                          >
+                            {hireMenuAction === "mark" ? (
+                              <Handshake className="mt-0.5 size-4 shrink-0 text-[#036AAF]" />
+                            ) : (
+                              <Undo2 className="mt-0.5 size-4 shrink-0 text-neutral-500" />
+                            )}
+                            <span className="min-w-0">
+                              <span className="block text-sm font-semibold text-[#0f2540]">
+                                {hireMenuAction === "mark"
+                                  ? `"${selectedApplicantName}" kişisini işe aldım`
+                                  : "İşe alım işaretini geri al"}
+                              </span>
+                              <span className="mt-0.5 block text-xs text-neutral-500">
+                                {hireMenuAction === "mark"
+                                  ? "Onayı için kendisine de soracağız."
+                                  : "Yanlışlıkla işaretlediysen kaydı kaldırabilirsin."}
+                              </span>
+                            </span>
+                          </button>
+                          <p className="mt-1 border-t border-neutral-200/80 px-3 pt-2.5 pb-1 text-[10px] font-semibold tracking-[0.12em] text-neutral-400 uppercase">
+                            Güvenlik Araçları
+                          </p>
+                        </>
+                      ) : null}
                       <button
                         type="button"
                         onClick={handleOpenReport}
@@ -1754,6 +2017,18 @@ export default function PanelMesajlarPage() {
                 </div>
 
                 <div className="shrink-0 border-t border-neutral-200/80 bg-white px-3 py-2.5 sm:px-4">
+                  <HireStrip
+                    userType={userType}
+                    hire={hire}
+                    hireLoaded={isHireLoaded}
+                    otherName={selectedApplicantName}
+                    promptEligible={hirePromptEligible}
+                    promptDismissed={hirePromptDismissed}
+                    isSubmitting={isHireSubmitting}
+                    onMarkHired={() => setHireDialogMode("mark")}
+                    onDismissPrompt={handleDismissHirePrompt}
+                    onRespond={(confirmed) => void handleRespondToHire(confirmed)}
+                  />
                   {sendError ? (
                     <p className="mb-2 text-sm text-red-600" role="alert">
                       {sendError}
@@ -1796,6 +2071,17 @@ export default function PanelMesajlarPage() {
           ) : null}
         </section>
       </div>
+
+      <HireConfirmDialog
+        mode={hireDialogMode}
+        displayName={selectedApplicantName}
+        isSubmitting={isHireSubmitting}
+        onConfirm={() => void handleConfirmHireDialog()}
+        onCancel={() => {
+          if (isHireSubmitting) return;
+          setHireDialogMode(null);
+        }}
+      />
 
       {reportModalOpen && selectedChat ? (
         <div

@@ -12,7 +12,15 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { Camera, Loader2, MapPin, Upload, UserX } from "lucide-react";
+import {
+  Camera,
+  ChevronRight,
+  Loader2,
+  MapPin,
+  Upload,
+  UserX,
+} from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { findNearestDistrict } from "../../kayit/find-nearest-location";
@@ -606,6 +614,24 @@ export default function PanelProfilPage() {
           </div>
         </div>
       </div>
+
+      <Link
+        href="/paketler"
+        className={`${cardClassName} mt-4 flex items-center gap-4 transition-colors hover:border-[#036AAF]/30 hover:bg-[#036AAF]/[0.03]`}
+      >
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-bold text-[#0f2540]">İlan Paketleri</p>
+            <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200/70">
+              ÜCRETSİZ
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-neutral-500">
+            Tanıtım dönemi sürüyor — tüm paketler şu an açık
+          </p>
+        </div>
+        <ChevronRight className="size-5 shrink-0 text-neutral-400" aria-hidden />
+      </Link>
 
       <form
         id="profile-form"
