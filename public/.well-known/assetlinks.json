@@ -1,0 +1,14 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.atlas.ekmek.ekmek",
+      "sha256_cert_fingerprints": [
+        "5B:59:3E:5A:F6:01:21:03:54:65:9A:C1:8C:CF:3D:63:4B:50:29:6D:1C:1F:52:F0:2B:81:30:84:60:D6:2A:73",
+        "43:32:4D:30:1D:42:EE:CF:54:23:0B:4E:28:F0:0C:40:30:1B:37:1E:F6:95:7F:D3:D4:B0:15:C0:55:4C:23:65",
+        "0C:58:AB:98:E1:16:45:D7:BD:45:51:24:38:7C:66:37:F6:52:AD:59:FF:64:3E:3D:25:64:A3:68:E2:C2:C6:B2"
+      ]
+    }
+  }
+]
