@@ -4,14 +4,14 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { AppStoreButtons } from "@/components/app-store-buttons";
 
-/** App Store uygulama id'si. Doluysa `https://apps.apple.com/app/id{id}`. */
-const APP_STORE_ID = "";
+/** App Store uygulama id'si. Doluysa `https://apps.apple.com/tr/app/id{id}`. */
+const APP_STORE_ID = "6780464276";
 
 const PLAY_STORE_URL =
   "https://play.google.com/store/apps/details?id=com.atlas.ekmek.ekmek";
 
 const APP_STORE_URL = APP_STORE_ID
-  ? `https://apps.apple.com/app/id${APP_STORE_ID}`
+  ? `https://apps.apple.com/tr/app/id${APP_STORE_ID}`
   : "";
 
 const REDIRECT_DELAY_MS = 1500;
